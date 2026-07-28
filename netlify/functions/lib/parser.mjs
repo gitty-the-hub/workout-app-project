@@ -86,7 +86,8 @@ export async function parseRoutine({ mimeType, dataBase64 }) {
     const resp = await client.messages.create({
       model: PARSE_MODEL,
       max_tokens: MAX_TOKENS,
-      temperature: 0,
+      // NOTE: `temperature` is deprecated/rejected on claude-sonnet-5 —
+      // determinism guidance now lives in the prompt + forced tool schema.
       system: SYSTEM,
       tools,
       tool_choice: { type: "tool", name: "submit_routine" },
