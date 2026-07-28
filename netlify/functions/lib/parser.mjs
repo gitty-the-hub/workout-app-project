@@ -36,10 +36,29 @@ Rules:
 10. "weeks": the stated program length; if not stated anywhere, use 6.
 11. Extract EVERY exercise. Never summarize, skip, merge, or invent exercises.`;
 
-/* The tool schema IS the routine schema (minus metadata keys the API doesn't need). */
-const toolSchema = { ...schema };
-delete toolSchema.$schema;
-delete toolSchema.$id;
+/* The tool schema IS the routine schema — but DEREFERENCED: $ref/definitions
+   indirection confuses models when used as a tool input_schema, so we inline
+   every reference and strip schema-metadata keys. Validation (AJV) still uses
+   the original schema; only the API-facing copy is flattened. */
+function deref(node, root) {
+  if (Array.isArray(node)) return node.map(n => deref(n, root));
+  if (node && typeof node === "object") {
+    if (node.$ref) {
+      const path = node.$ref.replace(/^#\//, "").split("/");
+      let t = root;
+      for (const p of path) t = t[p];
+      return deref(t, root);
+    }
+    const out = {};
+    for (const [k, v] of Object.entries(node)) {
+      if (k === "definitions" || k === "$schema" || k === "$id") continue;
+      out[k] = deref(v, root);
+    }
+    return out;
+  }
+  return node;
+}
+const toolSchema = deref(schema, schema);
 
 const ajv = new Ajv({ allErrors: true });
 const validate = ajv.compile(schema);
@@ -108,6 +127,9 @@ export async function parseRoutine({ mimeType, dataBase64 }) {
     }
 
     const errors = ajv.errorsText(validate.errors, { separator: " | " });
+    if (process.env.PARSE_DEBUG) {
+      console.error(`[PARSE_DEBUG] attempt ${attempt} invalid doc (first 800 chars):`, JSON.stringify(doc).slice(0, 800));
+    }
     if (attempt === MAX_ATTEMPTS) {
       throw new ParseError("schema_invalid_after_retry", `Routine failed schema validation after ${MAX_ATTEMPTS} attempts: ${errors}`, attempts);
     }
