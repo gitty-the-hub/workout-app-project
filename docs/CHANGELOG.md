@@ -9,3 +9,12 @@
 - Netlify Git-based auto-deploy live: https://workout-app-logan.netlify.app
 - ANTHROPIC_API_KEY set as Netlify env var (Functions scope)
 - Original drag-and-drop site (july-routine.netlify.app) kept frozen as-is
+
+## Phase 1 — Engine/data split (complete)
+- schema/routine.schema.json: formal contract (shared by engine, LLM output, validation)
+- Routine data extracted to public/routines/july-2026.json (validated against schema)
+- public/routines/index.json manifest
+- Engine refactor: zero hardcoded exercises; renders title/subtitle/warmup/weeks/days from JSON
+- Storage namespaced: app.prefs (unit/theme/lastRoutine) + routine.<id>.state; one-time non-destructive migration from legacy julyRoutine.v1
+- Routine selector landing view; auto-enters single routine; remembers last opened
+- Mobile/iOS optimizations folded into the main app (touch targets, 16px inputs, safe-area, audio unlock)
