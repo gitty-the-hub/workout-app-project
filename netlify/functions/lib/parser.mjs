@@ -12,7 +12,7 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 import Ajv from "ajv";
-import schema from "../../schema/routine.schema.json" with { type: "json" };
+import schema from "../../../schema/routine.schema.json" with { type: "json" };
 
 export const PARSE_MODEL = process.env.PARSE_MODEL || "claude-sonnet-5";
 const MAX_TOKENS = 8000;
