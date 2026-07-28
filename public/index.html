@@ -308,10 +308,36 @@ function fmtDate(t) { return new Date(t).toLocaleDateString("es-MX", { day:"2-di
 function fmtDateShort(t) { return new Date(t).toLocaleDateString("es-MX", { day:"2-digit", month:"short" }); }
 
 /* ---------- boot & routine loading ---------- */
+/* Primary source: the routines API (Netlify Function backed by Blobs).
+   Fallback: the static JSON files bundled with the site. */
+async function fetchJSON(url) {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  return r.json();
+}
+async function loadManifest() {
+  try {
+    const res = await fetchJSON("/api/routines");
+    if (res.ok && res.data && Array.isArray(res.data.routines)) return res.data;
+    throw new Error("bad envelope");
+  } catch(e) {
+    return fetchJSON("routines/index.json");
+  }
+}
+async function loadRoutineDoc(id) {
+  try {
+    const res = await fetchJSON("/api/routines/" + id);
+    if (res.ok && res.data && res.data.days) return res.data;
+    throw new Error("bad envelope");
+  } catch(e) {
+    return fetchJSON("routines/" + id + ".json");
+  }
+}
+
 async function boot() {
   applyTheme();
   try {
-    manifest = await (await fetch("routines/index.json")).json();
+    manifest = await loadManifest();
   } catch(e) {
     document.getElementById("bootMsg").textContent = "No se pudieron cargar las rutinas. Recarga la página.";
     return;
@@ -361,7 +387,7 @@ function migrateLegacy(id) {
 async function openRoutine(id) {
   let doc;
   try {
-    doc = await (await fetch("routines/"+id+".json")).json();
+    doc = await loadRoutineDoc(id);
   } catch(e) {
     showSelector();
     return;
