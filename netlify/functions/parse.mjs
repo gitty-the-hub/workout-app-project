@@ -1,10 +1,11 @@
 import { ok, err, requireAdmin } from "./lib/util.mjs";
+import { parseRoutine, ParseError, PARSE_MODEL } from "./lib/parser.mjs";
 
-/* POST /api/parse — Phase 2 STUB.
-   Contract (final from day one; Phase 3 only replaces the guts):
-     Request:  { filename, mimeType, dataBase64 }  + X-Admin-Token header
-     Response: { ok:true, data:{ routine, ... } } | { ok:false, error }
-   Limits: jpeg/png/webp/pdf, ~4.5MB decoded (Netlify function payload ceiling). */
+/* POST /api/parse — extract a workout routine from an uploaded photo/PDF.
+   Request:  { filename, mimeType, dataBase64 }  + X-Admin-Token header
+   Response: { ok:true, data:{ routine, model, attempts, usage, costEstimateUSD } }
+   The result is NOT auto-published: parsing and publishing are separate
+   operations, with the admin review (Phase 4) between them. */
 
 const ALLOWED = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
 const MAX_BYTES = Math.floor(4.5 * 1024 * 1024);
@@ -30,20 +31,39 @@ export default async (req) => {
     return err("too_large", `File is ~${(approxBytes / 1048576).toFixed(1)}MB; limit is 4.5MB`, 413);
   }
 
-  // ---- Phase 3 replaces everything below with the Claude vision call. ----
-  return ok({
-    stub: true,
-    received: { filename, mimeType, approxBytes },
-    routine: {
-      id: "stub-routine",
-      title: "Stub Routine (parser arrives in Phase 3)",
-      weeks: 1,
-      days: [{
-        key: "d1", tab: "Día 1", label: "Stub",
-        blocks: [{ title: "", exercises: [{ name: "Parse me in Phase 3", scheme: "1×1" }] }]
-      }]
+  try {
+    const t0 = Date.now();
+    const result = await parseRoutine({ mimeType, dataBase64 });
+    const totalMs = Date.now() - t0;
+    // one-line ops log per parse: model, attempts, tokens, cost — the cost ledger
+    const inTok = result.attempts.reduce((n, a) => n + (a.usage?.input_tokens || 0), 0);
+    const outTok = result.attempts.reduce((n, a) => n + (a.usage?.output_tokens || 0), 0);
+    console.log(JSON.stringify({
+      evt: "parse", file: filename, bytes: approxBytes, model: result.model,
+      attempts: result.attempts.length, input_tokens: inTok, output_tokens: outTok,
+      costUSD: result.costEstimateUSD, ms: totalMs
+    }));
+    return ok({
+      routine: result.routine,
+      model: result.model,
+      attempts: result.attempts.length,
+      usage: { input_tokens: inTok, output_tokens: outTok },
+      costEstimateUSD: result.costEstimateUSD,
+      ms: totalMs
+    });
+  } catch (e) {
+    if (e instanceof ParseError) {
+      console.log(JSON.stringify({ evt: "parse_failed", file: filename, code: e.code, attempts: e.attempts?.length }));
+      return err(e.code, e.message, 422);
     }
-  });
+    // API-level failures (auth, rate limit, overload) surface with their own hint
+    const status = e.status || 500;
+    console.log(JSON.stringify({ evt: "parse_error", file: filename, status, msg: String(e.message).slice(0, 200) }));
+    if (status === 401) return err("api_key_invalid", "Anthropic API key is missing or invalid on the server", 500);
+    if (status === 429) return err("rate_limited", "Anthropic API rate limit hit — retry in a moment", 429);
+    if (status === 529) return err("api_overloaded", "Anthropic API temporarily overloaded — retry in a moment", 503);
+    return err("parse_error", "Unexpected error while parsing: " + String(e.message).slice(0, 200), 500);
+  }
 };
 
 export const config = { path: "/api/parse" };
