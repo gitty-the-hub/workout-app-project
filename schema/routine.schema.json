@@ -1,0 +1,107 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "routine.schema.json",
+  "title": "Workout Routine",
+  "description": "Contract for a workout routine. Used by: (1) the frontend engine, (2) the LLM parser's forced output schema, (3) server-side validation.",
+  "type": "object",
+  "required": ["id", "title", "weeks", "days"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "Kebab-case unique identifier, e.g. 'july-2026'"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Display name, e.g. 'July Routine'"
+    },
+    "subtitle": {
+      "type": "string",
+      "description": "Optional secondary line, e.g. 'Programa de 6 semanas · Salazar el Joaquín'"
+    },
+    "weeks": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 52,
+      "description": "Program length in weeks"
+    },
+    "warmup": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/exercise" },
+      "description": "Warm-up performed every day"
+    },
+    "days": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 14,
+      "items": { "$ref": "#/definitions/day" }
+    }
+  },
+  "definitions": {
+    "exercise": {
+      "type": "object",
+      "required": ["name", "scheme"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Exercise name verbatim from source. Use '???' if unreadable."
+        },
+        "scheme": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Sets/reps verbatim, e.g. '4×5', '4×15-12-10-8', '3×30s', '7-7-7'"
+        },
+        "note": {
+          "type": "string",
+          "description": "Optional modifier, e.g. 'doble peso', 'L/R', '(KB)'"
+        }
+      }
+    },
+    "day": {
+      "type": "object",
+      "required": ["key", "tab", "label", "blocks"],
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "type": "string",
+          "pattern": "^d[0-9]+$",
+          "description": "Stable identifier: d1, d2, ... Used in storage keys — never reorder after publishing."
+        },
+        "tab": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Short tab text, e.g. 'Día 1', 'Extra'"
+        },
+        "label": {
+          "type": "string",
+          "description": "Muscle-group description, e.g. 'Pecho · Hombro'"
+        },
+        "blocks": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/definitions/block" }
+        }
+      }
+    },
+    "block": {
+      "type": "object",
+      "required": ["title", "exercises"],
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Section within the day, e.g. 'Empuje', 'Core'. May be empty string if source has no sections."
+        },
+        "exercises": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/definitions/exercise" }
+        }
+      }
+    }
+  }
+}
