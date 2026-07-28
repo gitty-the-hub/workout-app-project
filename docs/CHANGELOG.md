@@ -30,3 +30,12 @@
 - Frontend consumes /api/routines with static-file fallback
 - Local dev loop established: netlify-cli installed, PS execution policy fixed
 - Production acceptance: health OK, Blobs-served routines OK, 401 without token, stub round-trip with token
+
+## Phase 3 — LLM parsing core (complete)
+- lib/parser.mjs: Claude vision call (claude-sonnet-5), image/PDF content blocks
+- Forced structured output: routine.schema.json (dereferenced — inlined $refs) as the submit_routine tool schema with pinned tool_choice
+- Validate -> repair loop: AJV errors fed back as tool_result, one retry, then clean failure
+- /api/parse wired to real parser; contract unchanged; per-parse ops log (model, tokens, cost, latency); API error mapping (401/429/529)
+- eval/run-eval.mjs harness vs July photo ground truth: 96.1% name accuracy avg, threshold 95% -> PASS; attempts always 1; ~$0.04/parse, ~15s
+- Field lessons: temperature deprecated on sonnet-5 (removed); $ref-based tool schemas confuse the model (deref fix); secret env vars are write-only via CLI (local session key for evals)
+- Production acceptance: July photo parsed end-to-end via deployed endpoint, days expanded, notes extracted, warmup separated
