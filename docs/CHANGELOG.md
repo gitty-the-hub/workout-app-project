@@ -18,3 +18,15 @@
 - Storage namespaced: app.prefs (unit/theme/lastRoutine) + routine.<id>.state; one-time non-destructive migration from legacy julyRoutine.v1
 - Routine selector landing view; auto-enters single routine; remembers last opened
 - Mobile/iOS optimizations folded into the main app (touch targets, 16px inputs, safe-area, audio unlock)
+
+## Phase 2 — Backend skeleton (complete)
+- package.json: @netlify/blobs, ajv; functions use modern v2 syntax (config.path routing)
+- GET /api/health — deployment sanity check
+- Routines API on Netlify Blobs: GET list/document (public), POST create-update + DELETE (admin), auto-seeded from repo july-2026.json on first request
+- Server-side AJV validation against routine.schema.json on every write
+- Admin auth: X-Admin-Token header vs ADMIN_TOKEN env var
+- POST /api/parse stub with final contract: type allowlist (jpeg/png/webp/pdf), ~4.5MB limit, admin-gated
+- Uniform envelope {ok,data}|{ok,error:{code,message}} across all endpoints
+- Frontend consumes /api/routines with static-file fallback
+- Local dev loop established: netlify-cli installed, PS execution policy fixed
+- Production acceptance: health OK, Blobs-served routines OK, 401 without token, stub round-trip with token
