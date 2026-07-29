@@ -84,3 +84,24 @@ Known, accepted divergences (representation choices, not defects):
 - "(KB)"-style modifiers: model prefers note, July ground truth keeps them in the name
 - weekly percentages: model emits one entry per week (rule 14), ground truth folds them into the block title
 - Saturday "Rest" cell: model promotes it to a 7th day, ground truth keeps it as a block
+
+## Phase 6 — Visual identity & Logan (complete)
+- 6.1 Palette derived from the mascot (wood tones, bark ink, forest green) for both themes;
+      Oswald display face for headings and timer; faint wood-grain wash on cards; chart recoloured
+- 6.2 Two-voice copy system: COPY table with `logan` and `plain` variants + t() helper,
+      so personality and minimal mode share one source of truth
+- 6.3 Logan in six moments: rest timer (breathing → fist-up at zero), PR toast (flex),
+      day-header expression (ready/focused/pumped/tired from session state),
+      day & week completion overlay with falling leaves, empty state (clipboard),
+      admin parsing (thinking pose)
+- 6.4 Micro-interactions: checkbox press, tab/week-pill tap, toast bounce, eased progress bar;
+      all disabled under prefers-reduced-motion
+- 6.5 Synthesized sfx (wooden thunk / PR arpeggio / completion fanfare) via the existing
+      AudioContext — no audio files; off by default, toggle shares the iOS gesture unlock
+- 6.6 Minimal mode: one switch hides mascot + animations and reverts copy to neutral Spanish
+- 6.7 PWA: manifest, theme colours, pine-badge icons (home screen, apple-touch, maskable, favicon);
+      admin console adopts the palette while staying tool-like
+- Assets: 12 Logan sprites (ChatGPT-generated to a written spec), cleaned/trimmed/quantised —
+      masters 1.5MB, served set 325KB; tools/build-sprites.py regenerates everything
+- Typography follow-up: section labels 0.62→0.72rem, day header 0.76→1.02rem;
+      fixed dangling separator when a day has no muscle-group label
