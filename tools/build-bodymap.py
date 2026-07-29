@@ -41,7 +41,10 @@ MAP = {
   "core": [24,25,36,37,45,46,51],
   "hip-flexors": [53,54,57,58],
   "adductors": [65,66,69,70],
-  "quads": [55,56,59,60,67,68,71,72,73,74,75],
+  # 72/73 are the tibialis anterior (front of the shin), below the knee: they
+  # belong to neither key, so they stay unmapped and the quad highlight stops
+  # at the knee instead of flooding the whole leg.
+  "quads": [55,56,59,60,67,68,71,74,75],
   "calves": [76,77,78,79,80,81],
   "glutes": [],
 },
