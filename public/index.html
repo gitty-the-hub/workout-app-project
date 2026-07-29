@@ -343,6 +343,9 @@ async function boot() {
     return;
   }
   renderSelector();
+  // deep link: /?r=<routine-id> (used by the admin console's "Abrir" links)
+  const wanted = new URLSearchParams(location.search).get("r");
+  if (wanted && manifest.routines.find(r=>r.id===wanted)) return openRoutine(wanted);
   const last = prefs.lastRoutine && manifest.routines.find(r=>r.id===prefs.lastRoutine);
   if (last) openRoutine(last.id);
   else if (manifest.routines.length === 1) openRoutine(manifest.routines[0].id);
