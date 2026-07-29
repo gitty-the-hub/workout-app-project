@@ -3,6 +3,7 @@ import Ajv from "ajv";
 import schema from "../../schema/routine.schema.json" with { type: "json" };
 import seedRoutine from "../../public/routines/july-2026.json" with { type: "json" };
 import { ok, err, requireAdmin } from "./lib/util.mjs";
+import { matchOne, MIN_AUTO } from "./lib/matcher.mjs";
 
 /* Routines API — Netlify Blobs is the source of truth.
    Layout in the "routines" store:
@@ -60,6 +61,24 @@ function harden(doc) {
   return out;
 }
 
+/* Routines published before the catalog existed carry no refs, so the app would
+   show no muscle guide. Fill the gaps on read with the free local ladder — never
+   overwriting a ref an admin already reviewed. Not persisted: matching 25 names
+   costs microseconds, and this way stored documents stay exactly as published. */
+function ensureRefs(doc) {
+  if (!doc?.days) return doc;
+  const cache = new Map();
+  const fill = e => {
+    if (!e || e.ref) return;
+    if (!cache.has(e.name)) cache.set(e.name, matchOne(e.name));
+    const m = cache.get(e.name);
+    if (m && m.id && m.score >= MIN_AUTO) { e.ref = m.id; e.refScore = m.score; }
+  };
+  (doc.warmup || []).forEach(fill);
+  doc.days.forEach(d => (d.blocks || []).forEach(b => (b.exercises || []).forEach(fill)));
+  return doc;
+}
+
 /* Idempotent: on first ever request, seed the store from the repo-bundled July routine. */
 async function ensureSeed(store) {
   const index = await store.get("index", { type: "json" });
@@ -79,7 +98,7 @@ export default async (req, context) => {
     if (!id) return ok(index);
     const doc = await store.get("doc:" + id, { type: "json" });
     if (!doc) return err("not_found", `No routine with id '${id}'`, 404);
-    return ok(doc);
+    return ok(ensureRefs(doc));
   }
 
   if (req.method === "POST" && !id) {
