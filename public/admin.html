@@ -429,12 +429,18 @@ $("parseBtn").onclick = async () => {
     if (res.status === 202) {
       msg($("parseMsg"), "info", '<span class="spin"></span>Analizando con Claude… 0s');
       data = await pollJob(jobId, startedAt);
-    } else if (res.status === 404 || res.status === 405) {
-      msg($("parseMsg"), "info", '<span class="spin"></span>Analizando con Claude… (modo directo)');
-      data = await parseSync();
     } else {
-      const t = await res.text().catch(() => "");
-      throw new Error(`No se pudo iniciar el análisis (HTTP ${res.status}). ${t.slice(0, 120)}`);
+      /* Background job could not be started: either unavailable (404/405) or a
+         platform hiccup (5xx). The synchronous endpoint still works for single
+         images, so fall back rather than failing the user. */
+      const why = await res.text().catch(() => "");
+      msg($("parseMsg"), "info", '<span class="spin"></span>Analizando con Claude… (modo directo)');
+      try {
+        data = await parseSync();
+      } catch (inner) {
+        inner.detail = `background HTTP ${res.status}: ${why.slice(0, 160)} · fallback: ${inner.detail || inner.message}`;
+        throw inner;
+      }
     }
 
     lastMeta = data;
