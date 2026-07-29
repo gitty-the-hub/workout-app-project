@@ -35,10 +35,11 @@
   .chip.p { background:color-mix(in srgb, var(--green) 16%, transparent); color:var(--green); border-color:transparent; font-weight:600; }
   .chip.s { background:color-mix(in srgb, var(--wood) 20%, transparent); color:var(--wood-dark); border-color:transparent; }
   svg { width:100%; height:auto; max-width:640px; display:block; margin:0 auto; }
-  [data-theme="black"] #bodymap image { filter: invert(1) brightness(.92); }
-  [data-theme="black"] #bodymap g[data-m] { mix-blend-mode: screen; }
-  [data-theme="black"] #bodymap g[data-m].m-primary path { fill-opacity:.5; }
-  [data-theme="black"] #bodymap g[data-m].m-secondary path { fill-opacity:.42; }
+  #svgHost { background:#F4F3F0; border:1px solid var(--line); border-radius:12px; padding:8px 4px 2px; }
+  #bodymap g[data-m] { mix-blend-mode: normal; }
+  #bodymap g[data-m].m-primary path   { fill:#5F7043; fill-opacity:.58; }
+  #bodymap g[data-m].m-secondary path { fill:#C29B6E; fill-opacity:.62; }
+  #bodymap text { fill:#8a8378; }
   .legend { display:flex; gap:14px; justify-content:center; margin-top:6px; font-size:.75rem; color:var(--muted); }
   .swatch { display:inline-block; width:11px; height:11px; border-radius:3px; vertical-align:-1px; margin-right:5px; }
   .keys { display:flex; flex-wrap:wrap; gap:6px; }
