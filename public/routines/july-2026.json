@@ -4,119 +4,418 @@
   "subtitle": "Programa de 6 semanas · Salazar el Joaquín",
   "weeks": 6,
   "warmup": [
-    { "name": "Cobra", "scheme": "3×10" },
-    { "name": "Air squat", "scheme": "3×10" },
-    { "name": "Dead bug", "scheme": "3×30s" }
+    {
+      "name": "Cobra",
+      "scheme": "3×10"
+    },
+    {
+      "name": "Air squat",
+      "scheme": "3×10"
+    },
+    {
+      "name": "Dead bug",
+      "scheme": "3×30s"
+    }
   ],
   "days": [
     {
-      "key": "d1", "tab": "Día 1", "label": "Pecho · Hombro",
+      "key": "d1",
+      "tab": "Día 1",
+      "label": "Pecho · Hombro",
       "blocks": [
-        { "title": "Empuje", "exercises": [
-          { "name": "Barbell bench press", "scheme": "4×5" },
-          { "name": "Press bajo polea", "scheme": "4×15-12-10-8" },
-          { "name": "Push up deficit (KB)", "scheme": "3×6-8" }
-        ]},
-        { "title": "Hombro y accesorios", "exercises": [
-          { "name": "Lat raise DB", "scheme": "3×12 y 10", "note": "doble peso" },
-          { "name": "Arnold press", "scheme": "3×12" },
-          { "name": "Frontal raise", "scheme": "3×12 y 10", "note": "doble peso" },
-          { "name": "KB pull over", "scheme": "4×6" },
-          { "name": "Pull over polea", "scheme": "4×15-12-10-8" }
-        ]}
+        {
+          "title": "Empuje",
+          "exercises": [
+            {
+              "name": "Barbell bench press",
+              "scheme": "4×5",
+              "ref": "bench-press",
+              "refScore": 0.95
+            },
+            {
+              "name": "Press bajo polea",
+              "scheme": "4×15-12-10-8"
+            },
+            {
+              "name": "Push up deficit (KB)",
+              "scheme": "3×6-8"
+            }
+          ]
+        },
+        {
+          "title": "Hombro y accesorios",
+          "exercises": [
+            {
+              "name": "Lat raise DB",
+              "scheme": "3×12 y 10",
+              "note": "doble peso"
+            },
+            {
+              "name": "Arnold press",
+              "scheme": "3×12",
+              "ref": "arnold-press",
+              "refScore": 1
+            },
+            {
+              "name": "Frontal raise",
+              "scheme": "3×12 y 10",
+              "note": "doble peso",
+              "ref": "dumbbell-front-raise",
+              "refScore": 0.95
+            },
+            {
+              "name": "KB pull over",
+              "scheme": "4×6",
+              "ref": "straight-arm-pulldown",
+              "refScore": 0.95
+            },
+            {
+              "name": "Pull over polea",
+              "scheme": "4×15-12-10-8",
+              "ref": "straight-arm-pulldown",
+              "refScore": 0.95
+            }
+          ]
+        }
       ]
     },
     {
-      "key": "d2", "tab": "Día 2", "label": "Espalda · Bíceps",
+      "key": "d2",
+      "tab": "Día 2",
+      "label": "Espalda · Bíceps",
       "blocks": [
-        { "title": "Jalón", "exercises": [
-          { "name": "Lat pulldown", "scheme": "4×15" },
-          { "name": "Pull up", "scheme": "4×8" },
-          { "name": "Remo landmine", "scheme": "3×12 y 10", "note": "doble peso" }
-        ]},
-        { "title": "Posterior", "exercises": [
-          { "name": "Hiperextensión", "scheme": "3×8" }
-        ]},
-        { "title": "Bíceps", "exercises": [
-          { "name": "Hammer curl", "scheme": "4×10 y 6", "note": "doble peso" },
-          { "name": "21 con barra Z", "scheme": "7-7-7" },
-          { "name": "Predicador", "scheme": "4×8" }
-        ]}
+        {
+          "title": "Jalón",
+          "exercises": [
+            {
+              "name": "Lat pulldown",
+              "scheme": "4×15",
+              "ref": "lat-pulldown",
+              "refScore": 1
+            },
+            {
+              "name": "Pull up",
+              "scheme": "4×8",
+              "ref": "pull-up",
+              "refScore": 0.95
+            },
+            {
+              "name": "Remo landmine",
+              "scheme": "3×12 y 10",
+              "note": "doble peso",
+              "ref": "barbell-row",
+              "refScore": 0.95
+            }
+          ]
+        },
+        {
+          "title": "Posterior",
+          "exercises": [
+            {
+              "name": "Hiperextensión",
+              "scheme": "3×8",
+              "ref": "back-extension",
+              "refScore": 0.95
+            }
+          ]
+        },
+        {
+          "title": "Bíceps",
+          "exercises": [
+            {
+              "name": "Hammer curl",
+              "scheme": "4×10 y 6",
+              "note": "doble peso",
+              "ref": "hammer-curl",
+              "refScore": 1
+            },
+            {
+              "name": "21 con barra Z",
+              "scheme": "7-7-7"
+            },
+            {
+              "name": "Predicador",
+              "scheme": "4×8",
+              "ref": "preacher-curl",
+              "refScore": 0.95
+            }
+          ]
+        }
       ]
     },
     {
-      "key": "d3", "tab": "Día 3", "label": "Pierna · Tríceps · Core",
+      "key": "d3",
+      "tab": "Día 3",
+      "label": "Pierna · Tríceps · Core",
       "blocks": [
-        { "title": "Pierna", "exercises": [
-          { "name": "Leg extension", "scheme": "4×15-12-10-8" },
-          { "name": "Seated leg curl", "scheme": "3×12 y 10", "note": "doble peso" },
-          { "name": "Walking lunges", "scheme": "4×8 L/R" },
-          { "name": "RDL KB", "scheme": "3×12" }
-        ]},
-        { "title": "Tríceps", "exercises": [
-          { "name": "Tricep extension cable", "scheme": "4×15-12-10-8" },
-          { "name": "Skullcrusher", "scheme": "4×12" },
-          { "name": "Dips", "scheme": "4×6-10" }
-        ]},
-        { "title": "Core", "exercises": [
-          { "name": "Core press", "scheme": "3×12 L/R" },
-          { "name": "Pull over KB", "scheme": "4×10" }
-        ]}
+        {
+          "title": "Pierna",
+          "exercises": [
+            {
+              "name": "Leg extension",
+              "scheme": "4×15-12-10-8",
+              "ref": "leg-extension",
+              "refScore": 1
+            },
+            {
+              "name": "Seated leg curl",
+              "scheme": "3×12 y 10",
+              "note": "doble peso",
+              "ref": "seated-leg-curl",
+              "refScore": 1
+            },
+            {
+              "name": "Walking lunges",
+              "scheme": "4×8 L/R",
+              "ref": "walking-lunge",
+              "refScore": 0.95
+            },
+            {
+              "name": "RDL KB",
+              "scheme": "3×12",
+              "ref": "romanian-deadlift",
+              "refScore": 0.95
+            }
+          ]
+        },
+        {
+          "title": "Tríceps",
+          "exercises": [
+            {
+              "name": "Tricep extension cable",
+              "scheme": "4×15-12-10-8",
+              "ref": "lying-triceps-extension",
+              "refScore": 0.95
+            },
+            {
+              "name": "Skullcrusher",
+              "scheme": "4×12",
+              "ref": "ez-bar-skull-crusher",
+              "refScore": 0.98
+            },
+            {
+              "name": "Dips",
+              "scheme": "4×6-10",
+              "ref": "chest-dip",
+              "refScore": 0.95
+            }
+          ]
+        },
+        {
+          "title": "Core",
+          "exercises": [
+            {
+              "name": "Core press",
+              "scheme": "3×12 L/R"
+            },
+            {
+              "name": "Pull over KB",
+              "scheme": "4×10",
+              "ref": "straight-arm-pulldown",
+              "refScore": 0.95
+            }
+          ]
+        }
       ]
     },
     {
-      "key": "d4", "tab": "Día 4", "label": "Espalda · Bíceps (repite Día 2)",
+      "key": "d4",
+      "tab": "Día 4",
+      "label": "Espalda · Bíceps (repite Día 2)",
       "blocks": [
-        { "title": "Jalón", "exercises": [
-          { "name": "Lat pulldown", "scheme": "4×15" },
-          { "name": "Pull up", "scheme": "4×8" },
-          { "name": "Remo landmine", "scheme": "3×12 y 10", "note": "doble peso" }
-        ]},
-        { "title": "Posterior", "exercises": [
-          { "name": "Hiperextensión", "scheme": "3×8" }
-        ]},
-        { "title": "Bíceps", "exercises": [
-          { "name": "Hammer curl", "scheme": "4×10 y 6", "note": "doble peso" },
-          { "name": "21 con barra Z", "scheme": "7-7-7" },
-          { "name": "Predicador", "scheme": "4×8" }
-        ]}
+        {
+          "title": "Jalón",
+          "exercises": [
+            {
+              "name": "Lat pulldown",
+              "scheme": "4×15",
+              "ref": "lat-pulldown",
+              "refScore": 1
+            },
+            {
+              "name": "Pull up",
+              "scheme": "4×8",
+              "ref": "pull-up",
+              "refScore": 0.95
+            },
+            {
+              "name": "Remo landmine",
+              "scheme": "3×12 y 10",
+              "note": "doble peso",
+              "ref": "barbell-row",
+              "refScore": 0.95
+            }
+          ]
+        },
+        {
+          "title": "Posterior",
+          "exercises": [
+            {
+              "name": "Hiperextensión",
+              "scheme": "3×8",
+              "ref": "back-extension",
+              "refScore": 0.95
+            }
+          ]
+        },
+        {
+          "title": "Bíceps",
+          "exercises": [
+            {
+              "name": "Hammer curl",
+              "scheme": "4×10 y 6",
+              "note": "doble peso",
+              "ref": "hammer-curl",
+              "refScore": 1
+            },
+            {
+              "name": "21 con barra Z",
+              "scheme": "7-7-7"
+            },
+            {
+              "name": "Predicador",
+              "scheme": "4×8",
+              "ref": "preacher-curl",
+              "refScore": 0.95
+            }
+          ]
+        }
       ]
     },
     {
-      "key": "d5", "tab": "Día 5", "label": "Pecho · Hombro (repite Día 1)",
+      "key": "d5",
+      "tab": "Día 5",
+      "label": "Pecho · Hombro (repite Día 1)",
       "blocks": [
-        { "title": "Empuje", "exercises": [
-          { "name": "Barbell bench press", "scheme": "4×5" },
-          { "name": "Press bajo polea", "scheme": "4×15-12-10-8" },
-          { "name": "Push up deficit (KB)", "scheme": "3×6-8" }
-        ]},
-        { "title": "Hombro y accesorios", "exercises": [
-          { "name": "Lat raise DB", "scheme": "3×12 y 10", "note": "doble peso" },
-          { "name": "Arnold press", "scheme": "3×12" },
-          { "name": "Frontal raise", "scheme": "3×12 y 10", "note": "doble peso" },
-          { "name": "KB pull over", "scheme": "4×6" },
-          { "name": "Pull over polea", "scheme": "4×15-12-10-8" }
-        ]}
+        {
+          "title": "Empuje",
+          "exercises": [
+            {
+              "name": "Barbell bench press",
+              "scheme": "4×5",
+              "ref": "bench-press",
+              "refScore": 0.95
+            },
+            {
+              "name": "Press bajo polea",
+              "scheme": "4×15-12-10-8"
+            },
+            {
+              "name": "Push up deficit (KB)",
+              "scheme": "3×6-8"
+            }
+          ]
+        },
+        {
+          "title": "Hombro y accesorios",
+          "exercises": [
+            {
+              "name": "Lat raise DB",
+              "scheme": "3×12 y 10",
+              "note": "doble peso"
+            },
+            {
+              "name": "Arnold press",
+              "scheme": "3×12",
+              "ref": "arnold-press",
+              "refScore": 1
+            },
+            {
+              "name": "Frontal raise",
+              "scheme": "3×12 y 10",
+              "note": "doble peso",
+              "ref": "dumbbell-front-raise",
+              "refScore": 0.95
+            },
+            {
+              "name": "KB pull over",
+              "scheme": "4×6",
+              "ref": "straight-arm-pulldown",
+              "refScore": 0.95
+            },
+            {
+              "name": "Pull over polea",
+              "scheme": "4×15-12-10-8",
+              "ref": "straight-arm-pulldown",
+              "refScore": 0.95
+            }
+          ]
+        }
       ]
     },
     {
-      "key": "d6", "tab": "Extra", "label": "Pierna · Tríceps · Core (repite Día 3)",
+      "key": "d6",
+      "tab": "Extra",
+      "label": "Pierna · Tríceps · Core (repite Día 3)",
       "blocks": [
-        { "title": "Pierna", "exercises": [
-          { "name": "Leg extension", "scheme": "4×15-12-10-8" },
-          { "name": "Seated leg curl", "scheme": "3×12 y 10", "note": "doble peso" },
-          { "name": "Walking lunges", "scheme": "4×8 L/R" },
-          { "name": "RDL KB", "scheme": "3×12" }
-        ]},
-        { "title": "Tríceps", "exercises": [
-          { "name": "Tricep extension cable", "scheme": "4×15-12-10-8" },
-          { "name": "Skullcrusher", "scheme": "4×12" },
-          { "name": "Dips", "scheme": "4×6-10" }
-        ]},
-        { "title": "Core", "exercises": [
-          { "name": "Core press", "scheme": "3×12 L/R" },
-          { "name": "Pull over KB", "scheme": "4×10" }
-        ]}
+        {
+          "title": "Pierna",
+          "exercises": [
+            {
+              "name": "Leg extension",
+              "scheme": "4×15-12-10-8",
+              "ref": "leg-extension",
+              "refScore": 1
+            },
+            {
+              "name": "Seated leg curl",
+              "scheme": "3×12 y 10",
+              "note": "doble peso",
+              "ref": "seated-leg-curl",
+              "refScore": 1
+            },
+            {
+              "name": "Walking lunges",
+              "scheme": "4×8 L/R",
+              "ref": "walking-lunge",
+              "refScore": 0.95
+            },
+            {
+              "name": "RDL KB",
+              "scheme": "3×12",
+              "ref": "romanian-deadlift",
+              "refScore": 0.95
+            }
+          ]
+        },
+        {
+          "title": "Tríceps",
+          "exercises": [
+            {
+              "name": "Tricep extension cable",
+              "scheme": "4×15-12-10-8",
+              "ref": "lying-triceps-extension",
+              "refScore": 0.95
+            },
+            {
+              "name": "Skullcrusher",
+              "scheme": "4×12",
+              "ref": "ez-bar-skull-crusher",
+              "refScore": 0.98
+            },
+            {
+              "name": "Dips",
+              "scheme": "4×6-10",
+              "ref": "chest-dip",
+              "refScore": 0.95
+            }
+          ]
+        },
+        {
+          "title": "Core",
+          "exercises": [
+            {
+              "name": "Core press",
+              "scheme": "3×12 L/R"
+            },
+            {
+              "name": "Pull over KB",
+              "scheme": "4×10",
+              "ref": "straight-arm-pulldown",
+              "refScore": 0.95
+            }
+          ]
+        }
       ]
     }
   ]
