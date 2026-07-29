@@ -1,0 +1,109 @@
+{
+  "id": "hypertrophy-strength",
+  "title": "Hypertophy - Strength",
+  "subtitle": "Salazar el Joaquin · 5 weeks program · Do not be a sissy program",
+  "weeks": 5,
+  "days": [
+    {
+      "key": "d1", "tab": "Monday", "label": "",
+      "blocks": [
+        { "title": "Sección de fuerza — S1 80% · S2 76% · S3 85% · S4 88% · S5 80%", "exercises": [
+          { "name": "MP", "scheme": "5x5", "note": "2min rest" },
+          { "name": "Deadlift barbell", "scheme": "5x5", "note": "2min rest" }
+        ]},
+        { "title": "Piernas - biceps - shoulders", "exercises": [
+          { "name": "Bulgarian split Squat", "scheme": "3x8", "note": "C/L" },
+          { "name": "Seated leg curl", "scheme": "4x12" },
+          { "name": "2kb front squat", "scheme": "4x5" },
+          { "name": "Chin ups", "scheme": "4x3-5", "note": "lastre RIR 2" },
+          { "name": "Hammer curl", "scheme": "4x8" },
+          { "name": "Front raise", "scheme": "4x12" }
+        ]}
+      ]
+    },
+    {
+      "key": "d2", "tab": "Tuesday", "label": "Pectoral - espalda - triceps",
+      "blocks": [
+        { "title": "Pectoral - espalda - triceps", "exercises": [
+          { "name": "Bench press", "scheme": "4x6" },
+          { "name": "Low cable pulley press", "scheme": "4x12" },
+          { "name": "Peck deck", "scheme": "4x8" },
+          { "name": "Lat pulldown", "scheme": "4x15-12-10-6" },
+          { "name": "Pull over rope", "scheme": "4x8" },
+          { "name": "Bent over row barbell", "scheme": "5x10" },
+          { "name": "Tricep extension rope", "scheme": "4x10" },
+          { "name": "Skullcrusher EZ", "scheme": "3x12" }
+        ]}
+      ]
+    },
+    {
+      "key": "d3", "tab": "Wednesday", "label": "",
+      "blocks": [
+        { "title": "Sección de fuerza — S1 80% · S2 76% · S3 85% · S4 88% · S5 80%", "exercises": [
+          { "name": "MP", "scheme": "5x5", "note": "2min rest" },
+          { "name": "Deadlift barbell", "scheme": "5x5", "note": "2min rest" }
+        ]},
+        { "title": "Full body", "exercises": [
+          { "name": "Close chest press", "scheme": "4x10" },
+          { "name": "Lat pulldown revolving bar", "scheme": "4x8" },
+          { "name": "Leg press", "scheme": "4x8" },
+          { "name": "Smith close squat", "scheme": "3x8" },
+          { "name": "Seated military press press DB", "scheme": "3x8" },
+          { "name": "Pull over cable rope", "scheme": "4x12" },
+          { "name": "Dragon flag", "scheme": "4x5" }
+        ]}
+      ]
+    },
+    {
+      "key": "d4", "tab": "Thursday", "label": "Piernas - biceps - shoulders",
+      "blocks": [
+        { "title": "Piernas - biceps - shoulders", "exercises": [
+          { "name": "Bulgarian split Squat", "scheme": "3x8", "note": "C/L" },
+          { "name": "Seated leg curl", "scheme": "4x12" },
+          { "name": "2kb front squat", "scheme": "4x5" },
+          { "name": "Chin ups", "scheme": "4x3-5", "note": "lastre RIR 2" },
+          { "name": "Hammer curl", "scheme": "4x8" },
+          { "name": "Front raise", "scheme": "4x12" }
+        ]}
+      ]
+    },
+    {
+      "key": "d5", "tab": "Friday", "label": "",
+      "blocks": [
+        { "title": "Sección de fuerza — S1 80% · S2 76% · S3 85% · S4 88% · S5 80%", "exercises": [
+          { "name": "MP", "scheme": "5x5", "note": "2min rest" },
+          { "name": "Deadlift barbell", "scheme": "5x5", "note": "2min rest" }
+        ]},
+        { "title": "Pectoral - espalda - triceps", "exercises": [
+          { "name": "Bench press", "scheme": "4x6" },
+          { "name": "Low cable pulley press", "scheme": "4x12" },
+          { "name": "Peck deck", "scheme": "4x8" },
+          { "name": "Lat pulldown", "scheme": "4x15-12-10-6" },
+          { "name": "Pull over rope", "scheme": "4x8" },
+          { "name": "Bent over row barbell", "scheme": "5x10" },
+          { "name": "Tricep extension rope", "scheme": "4x10" },
+          { "name": "Skullcrusher EZ", "scheme": "3x12" }
+        ]}
+      ]
+    },
+    {
+      "key": "d6", "tab": "Saturday", "label": "Full body",
+      "blocks": [
+        { "title": "Full body", "exercises": [
+          { "name": "Close chest press", "scheme": "4x10" },
+          { "name": "Lat pulldown revolving bar", "scheme": "4x8" },
+          { "name": "Leg press", "scheme": "4x8" },
+          { "name": "Smith close squat", "scheme": "3x8" },
+          { "name": "Hip thrust", "scheme": "4x8" },
+          { "name": "Seated military press DB", "scheme": "3x8" },
+          { "name": "Pull over cable rope", "scheme": "4x12" },
+          { "name": "Renegade row DB", "scheme": "4x10" },
+          { "name": "Dragon flag", "scheme": "4x5" }
+        ]},
+        { "title": "", "exercises": [
+          { "name": "Rest", "scheme": "—" }
+        ]}
+      ]
+    }
+  ]
+}

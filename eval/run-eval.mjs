@@ -18,7 +18,12 @@ import { parseRoutine, PARSE_MODEL } from "../netlify/functions/lib/parser.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CASES = [
-  { name: "july-2026", image: join(HERE, "july-2026.jpeg"), mimeType: "image/jpeg", expected: join(HERE, "expected/july-2026.json") }
+  /* simple: one table, days as columns, repeated days referenced by name */
+  { name: "july-2026", image: join(HERE, "july-2026.jpeg"), mimeType: "image/jpeg", expected: join(HERE, "expected/july-2026.json") },
+  /* hard: weekday grid, two stacked sections per column, weekly % progressions,
+     rest/RIR annotations. Ground truth transcribed from the photo, not from the
+     published parse (which contained typos and a missing exercise). */
+  { name: "hypertrophy-strength", image: join(HERE, "hypertrophy-strength.png"), mimeType: "image/png", expected: join(HERE, "expected/hypertrophy-strength.json") }
 ];
 const THRESHOLD = 0.95;
 const RUNS = parseInt(process.argv[2] || "3", 10);
