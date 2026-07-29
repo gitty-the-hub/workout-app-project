@@ -10,14 +10,12 @@
   :root, [data-theme="white"] {
     --bg:#F4F3F0; --card:#ffffff; --ink:#221E1A; --muted:#8a8378; --line:#e4e0d8; --fill:#efece5;
     --wood:#C29B6E; --wood-dark:#7A5433; --green:#5F7043;
-    --bm-base:#d5cfc6; --bm-inert:#bdb6ab; --bm-off:#cac4ba;
-    --bm-primary:#5F7043; --bm-secondary:#C29B6E; --bm-bg:#F4F3F0; --bm-label:#8a8378;
+    --bm-primary:#5F7043; --bm-secondary:#C29B6E; --bm-label:#8a8378;
   }
   [data-theme="black"] {
     --bg:#131210; --card:#1A1815; --ink:#F2EFE9; --muted:#948c80; --line:#2c2823; --fill:#221F1B;
     --wood:#C29B6E; --wood-dark:#8B6236; --green:#7E9455;
-    --bm-base:#332e28; --bm-inert:#2a2620; --bm-off:#38322b;
-    --bm-primary:#7E9455; --bm-secondary:#A87C4F; --bm-bg:#131210; --bm-label:#948c80;
+    --bm-primary:#9DB56A; --bm-secondary:#C29B6E; --bm-label:#948c80;
   }
   * { box-sizing:border-box; margin:0; padding:0; }
   body { font-family:-apple-system,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--ink);
@@ -36,7 +34,11 @@
   .chip { border:1px solid var(--line); border-radius:999px; padding:4px 11px; font-size:.78rem; color:var(--muted); }
   .chip.p { background:color-mix(in srgb, var(--green) 16%, transparent); color:var(--green); border-color:transparent; font-weight:600; }
   .chip.s { background:color-mix(in srgb, var(--wood) 20%, transparent); color:var(--wood-dark); border-color:transparent; }
-  svg { width:100%; height:auto; max-width:520px; display:block; margin:0 auto; }
+  svg { width:100%; height:auto; max-width:640px; display:block; margin:0 auto; }
+  [data-theme="black"] #bodymap image { filter: invert(1) brightness(.92); }
+  [data-theme="black"] #bodymap g[data-m] { mix-blend-mode: screen; }
+  [data-theme="black"] #bodymap g[data-m].m-primary path { fill-opacity:.5; }
+  [data-theme="black"] #bodymap g[data-m].m-secondary path { fill-opacity:.42; }
   .legend { display:flex; gap:14px; justify-content:center; margin-top:6px; font-size:.75rem; color:var(--muted); }
   .swatch { display:inline-block; width:11px; height:11px; border-radius:3px; vertical-align:-1px; margin-right:5px; }
   .keys { display:flex; flex-wrap:wrap; gap:6px; }
@@ -68,7 +70,7 @@
   <div class="legend">
     <span><i class="swatch" style="background:var(--bm-primary)"></i>Principal</span>
     <span><i class="swatch" style="background:var(--bm-secondary)"></i>Secundario</span>
-    <span><i class="swatch" style="background:var(--bm-off)"></i>Sin trabajar</span>
+    <span><i class="swatch" style="background:#d8d3ca"></i>Sin trabajar</span>
   </div>
 </div>
 
