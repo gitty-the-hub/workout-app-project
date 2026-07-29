@@ -19,6 +19,8 @@
     <path data-m="traps" d="M97 50 Q86 53 76 64 Q86 62 97 62 Z"/>
     <!-- anterior deltoid: rounded cap sitting on the shoulder -->
     <path data-m="anterior-deltoid" d="M78 63 Q65 68 62 82 Q60 92 64 95 Q73 94 78 84 Q81 71 78 63 Z"/>
+    <!-- lateral (medial) deltoid: outer cap, drawn over the anterior head -->
+    <path data-m="lateral-deltoid" d="M71 64 Q62 69 60 82 Q60 91 64 94 Q68 89 69 79 Q71 70 71 64 Z"/>
     <!-- upper chest (clavicular head) -->
     <path data-m="upper-chest" d="M98 63 Q88 64 80 69 Q78 74 79 79 Q88 75 98 74 Z"/>
     <!-- pectoralis major -->
@@ -48,6 +50,8 @@
     <path data-m="traps" d="M99 94 Q92 84 87 74 Q84 88 89 102 Q95 100 99 99 Z"/>
     <!-- posterior deltoid -->
     <path data-m="posterior-deltoid" d="M78 63 Q65 68 62 82 Q60 92 64 95 Q73 94 78 84 Q81 71 78 63 Z"/>
+    <!-- lateral (medial) deltoid: outer cap, drawn over the anterior head -->
+    <path data-m="lateral-deltoid" d="M71 64 Q62 69 60 82 Q60 91 64 94 Q68 89 69 79 Q71 70 71 64 Z"/>
     <!-- rotator cuff, tucked under the deltoid -->
     <ellipse data-m="rotator-cuff" cx="82" cy="76" rx="5" ry="4.5"/>
     <!-- rhomboids / mid back -->
