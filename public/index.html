@@ -192,6 +192,54 @@
   .timerbar.finished .t-track, .timerbar.finished .t-cancel, .timerbar.finished .t-add, .timerbar.finished .t-remaining, .timerbar.finished .tpreset, .timerbar.finished .timer-title { display:none; }
   @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.7;} }
   .timerbar.finished { animation:pulse 0.8s ease-in-out 3; }
+
+  /* ============ LOGAN ============ */
+  .logan { display:block; user-select:none; -webkit-user-drag:none; }
+  [data-minimal="1"] .logan, [data-minimal="1"] #celebrate { display:none !important; }
+
+  /* rest timer mascot */
+  .timer-logan { width:52px; height:52px; object-fit:contain; flex-shrink:0; margin-right:2px; animation:breathe 3.4s ease-in-out infinite; }
+  .timerbar.finished .timer-logan { animation:pop .5s cubic-bezier(.2,1.4,.4,1) 1; }
+  @keyframes breathe { 0%,100%{transform:translateY(0) scale(1);} 50%{transform:translateY(-3px) scale(1.02);} }
+  @keyframes pop { 0%{transform:scale(.7) rotate(-6deg);} 60%{transform:scale(1.12) rotate(3deg);} 100%{transform:scale(1);} }
+
+  /* day header expression */
+  .day-head { display:flex; align-items:center; gap:9px; margin:2px 0 10px; }
+  .day-head .logan { width:34px; height:34px; object-fit:contain; }
+  .day-head .day-label { margin:0; }
+
+  /* PR toast mascot */
+  .pr-toast { display:flex; align-items:center; gap:11px; text-align:left; }
+  .pr-toast .logan { width:44px; height:44px; object-fit:contain; flex-shrink:0; }
+
+  /* empty state mascot */
+  .sel-empty .logan { width:110px; height:110px; object-fit:contain; margin:0 auto 10px; }
+
+  /* celebration overlay */
+  #celebrate { position:fixed; inset:0; z-index:120; display:none; align-items:center; justify-content:center;
+               pointer-events:none; background:rgba(0,0,0,0.18); backdrop-filter:blur(1.5px); }
+  #celebrate.show { display:flex; }
+  #celebrate .box { text-align:center; animation:rise .5s cubic-bezier(.2,1.3,.4,1); }
+  #celebrate img { width:190px; height:190px; object-fit:contain; margin:0 auto; }
+  #celebrate .msg { font-family:"Oswald","Segoe UI",Roboto,sans-serif; font-size:1.1rem; color:#fff;
+                    background:var(--green); border-radius:10px; padding:8px 18px; display:inline-block; margin-top:6px; }
+  @keyframes rise { 0%{opacity:0; transform:translateY(26px) scale(.9);} 100%{opacity:1; transform:none;} }
+  .leaf { position:fixed; top:-30px; font-size:18px; z-index:121; pointer-events:none; animation:fall linear forwards; }
+  @keyframes fall { 0%{opacity:1; transform:translateY(0) rotate(0);} 100%{opacity:0; transform:translateY(102vh) rotate(520deg);} }
+
+  /* micro-interactions */
+  .ex.checked .name { animation:strike .28s ease-out; }
+  @keyframes strike { from{opacity:.45;} to{opacity:1;} }
+  .ex input[type=checkbox] { transition:transform .12s ease; }
+  .ex input[type=checkbox]:active { transform:scale(.86); }
+  .tab, .wk, .btn { transition:transform .12s ease, border-color .15s, background .15s; }
+  .tab:active, .wk:active { transform:scale(.96); }
+  .pr-toast.show { animation:toastIn .45s cubic-bezier(.2,1.3,.4,1); }
+  @keyframes toastIn { 0%{transform:translateX(-50%) translateY(-130%);} 70%{transform:translateX(-50%) translateY(6px);} 100%{transform:translateX(-50%) translateY(0);} }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; }
+  }
 </style>
 </head>
 <body data-theme="white">
@@ -231,6 +279,14 @@
       <button id="thW">Blanco</button>
       <button id="thB">Negro</button>
     </div>
+    <div class="themebox">
+      <button id="mdFull">Con Logan</button>
+      <button id="mdMin">Minimalista</button>
+    </div>
+    <div class="themebox">
+      <button id="sndOn">Sonido</button>
+      <button id="sndOff">Silencio</button>
+    </div>
   </div>
 </header>
 
@@ -259,7 +315,7 @@
 </div>
 
 <div class="tabs" id="tabs"></div>
-<div class="day-label" id="dayLabel"></div>
+<div class="day-head"><img class="logan" id="dayFace" src="img/head-ready.png" alt=""><div class="day-label" id="dayLabel"></div></div>
 <div class="card" id="card"></div>
 
 <div class="notecard">
@@ -279,8 +335,14 @@
 
 <div class="pr-toast" id="prToast"></div>
 
+<div id="celebrate"><div class="box">
+  <img class="logan" id="celebrateImg" src="img/logan-celebrate.png" alt="">
+  <div class="msg" id="celebrateMsg"></div>
+</div></div>
+
 <div class="timerbar" id="timerbar" style="display:none">
   <div class="timer-inner">
+    <img class="logan timer-logan" id="timerLogan" src="img/logan-rest.png" alt="">
     <span class="timer-title" id="cTimerTitle">Descanso</span>
     <button class="tpreset" data-s="30">30 s</button>
     <button class="tpreset" data-s="60">1:00</button>
@@ -337,6 +399,8 @@ const COPY = {
     dayDone: (date) => `✓ ${date}`,
     loading: "Cargando…",
     loadError: "No se pudieron cargar las rutinas. Recarga la página.",
+    celebrateDay: "Día completado",
+    celebrateWeek: "Semana completada",
     install: "<b>Consejo</b> — añade la app a tu pantalla de inicio: en iPhone abre el menú Compartir y elige «Añadir a pantalla de inicio»; en Android, menú ⋮ → «Instalar aplicación»."
   },
   logan: {
@@ -367,6 +431,8 @@ const COPY = {
     dayDone: (date) => `✓ hecho el ${date}`,
     loading: "Logan está buscando tus rutinas…",
     loadError: "No se pudieron cargar las rutinas. Recarga la página.",
+    celebrateDay: "Día completo. Logan lo vio todo.",
+    celebrateWeek: "Semana entera. Un anillo más.",
     install: "<b>Consejo de Logan</b> — ponme en tu pantalla de inicio: en iPhone, menú Compartir → «Añadir a pantalla de inicio»; en Android, menú ⋮ → «Instalar aplicación». Así entras de un toque."
   }
 };
@@ -409,6 +475,7 @@ let prefs = loadJSON(PREFS_KEY) || {};
 if (!prefs.unit) prefs.unit = "kg";
 if (!prefs.theme) prefs.theme = "white";
 if (prefs.minimal === undefined) prefs.minimal = false;   // minimal mode: plain copy, no mascot
+if (prefs.sound === undefined) prefs.sound = false;       // extra sfx: off unless asked for
 function savePrefs() { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); }
 
 /* ---------- runtime state ---------- */
@@ -497,7 +564,7 @@ function renderSelector() {
   const l = document.getElementById("selList");
   l.innerHTML = "";
   if (!manifest.routines.length) {
-    l.innerHTML = `<div class="sel-empty">${t("selEmpty")}</div>`;
+    l.innerHTML = `<div class="sel-empty">${prefs.minimal ? "" : `<img class="logan" src="img/logan-plan.png" alt="">`}${t("selEmpty")}</div>`;
     return;
   }
   manifest.routines.forEach(r=>{
@@ -578,9 +645,50 @@ document.getElementById("backBtn").onclick = ()=>{ showSelector(); };
 /* ---------- theme ---------- */
 function applyTheme() {
   document.body.dataset.theme = prefs.theme;
+  document.body.dataset.minimal = prefs.minimal ? "1" : "0";
   document.getElementById("thW").className = prefs.theme==="white" ? "on" : "";
   document.getElementById("thB").className = prefs.theme==="black" ? "on" : "";
+  const f = document.getElementById("mdFull"), m = document.getElementById("mdMin");
+  if (f && m) { f.className = prefs.minimal ? "" : "on"; m.className = prefs.minimal ? "on" : ""; }
+  const so = document.getElementById("sndOn"), sf = document.getElementById("sndOff");
+  if (so && sf) { so.className = prefs.sound ? "on" : ""; sf.className = prefs.sound ? "" : "on"; }
 }
+
+/* ---------- Logan ---------- */
+/* expression follows the state of the current day */
+function faceFor(d) {
+  const {done,total} = dayDone(d);
+  if (done === total && total) return "head-pumped";
+  if (done > 0) return "head-focused";
+  const anyThisWeek = weekStats(state._week).done > 0;
+  return (!anyThisWeek && state._week > 1) ? "head-tired" : "head-ready";
+}
+
+let celebrateTimer = null;
+function celebrate(kind) {
+  if (prefs.minimal) return;
+  const el = document.getElementById("celebrate");
+  document.getElementById("celebrateImg").src = "img/logan-celebrate.png";
+  document.getElementById("celebrateMsg").textContent = t(kind === "week" ? "celebrateWeek" : "celebrateDay");
+  el.classList.add("show");
+  sfx.fanfare();
+  if (navigator.vibrate) navigator.vibrate(kind === "week" ? [90,60,90,60,140] : [70,50,110]);
+  // falling leaves
+  for (let i = 0; i < (kind === "week" ? 16 : 10); i++) {
+    const leaf = document.createElement("div");
+    leaf.className = "leaf";
+    leaf.textContent = "🍃";
+    leaf.style.left = (5 + Math.random()*90) + "vw";
+    leaf.style.animationDuration = (2.2 + Math.random()*1.6) + "s";
+    leaf.style.animationDelay = (Math.random()*0.5) + "s";
+    document.body.appendChild(leaf);
+    setTimeout(()=>leaf.remove(), 4200);
+  }
+  clearTimeout(celebrateTimer);
+  celebrateTimer = setTimeout(()=>el.classList.remove("show"), kind === "week" ? 2600 : 2000);
+}
+document.getElementById("celebrate").addEventListener("click", () =>
+  document.getElementById("celebrate").classList.remove("show"));
 
 /* ---------- PR logic (computed, stays consistent after edits/deletes) ---------- */
 function prIndices(name) {
@@ -605,10 +713,12 @@ let toastTimer = null;
 function showPrToast(name, entry, prevBestKg) {
   const el = document.getElementById("prToast");
   const prevTxt = rnd(toUnit(prevBestKg, "kg", prefs.unit)) + " " + prefs.unit;
-  el.innerHTML = `${t("prTitle", name, fmtW(entry))}<small>${t("prSub", prevTxt)}</small>`;
+  el.innerHTML = (prefs.minimal ? "" : `<img class="logan" src="img/logan-pr.png" alt="">`) +
+    `<div>${t("prTitle", name, fmtW(entry))}<small>${t("prSub", prevTxt)}</small></div>`;
   el.classList.add("show");
   clearTimeout(toastTimer);
   toastTimer = setTimeout(()=>el.classList.remove("show"), 3500);
+  sfx.cheer();
   if (navigator.vibrate) navigator.vibrate([80,40,80]);
 }
 
@@ -629,7 +739,11 @@ function updateStamp(d) {
   const {done,total} = dayDone(d);
   const key = sk(state._week, d.key);
   if (done === total && total > 0) {
-    if (!state.s[key]) state.s[key] = Date.now();
+    if (!state.s[key]) {
+      state.s[key] = Date.now();
+      // whole week finished? that outranks the single-day celebration
+      celebrate(weekStats(state._week).pct === 100 ? "week" : "day");
+    }
   } else {
     delete state.s[key];
   }
@@ -835,6 +949,7 @@ function render() {
   renderNote();
   const d = DAYS.find(x=>x.key===current);
   const stamp = state.s[sk(state._week, d.key)];
+  document.getElementById("dayFace").src = "img/" + faceFor(d) + ".png";
   document.getElementById("dayLabel").innerHTML = "Semana "+state._week+(d.label ? " · "+d.label : "") +
     (stamp ? `<span class="day-stamp">${t("dayDone", fmtDate(stamp))}</span>` : "");
   const card = document.getElementById("card");
@@ -866,6 +981,7 @@ function render() {
         <span class="scheme">${e.scheme}</span>`;
       main.querySelector("input").onchange = ev=>{
         state[id]=ev.target.checked;
+        if (ev.target.checked) sfx.thunk();
         updateStamp(d);
         save(); render();
       };
@@ -923,6 +1039,10 @@ function render() {
 
 document.getElementById("uKg").onclick = ()=>{ prefs.unit="kg"; savePrefs(); render(); };
 document.getElementById("uLb").onclick = ()=>{ prefs.unit="lb"; savePrefs(); render(); };
+document.getElementById("sndOn").onclick = ()=>{ prefs.sound=true; savePrefs(); ensureAudio(); sfx.thunk(); render(); };
+document.getElementById("sndOff").onclick = ()=>{ prefs.sound=false; savePrefs(); render(); };
+document.getElementById("mdFull").onclick = ()=>{ prefs.minimal=false; savePrefs(); applyCopy(); render(); };
+document.getElementById("mdMin").onclick = ()=>{ prefs.minimal=true; savePrefs(); applyCopy(); render(); };
 document.getElementById("thW").onclick = ()=>{ prefs.theme="white"; savePrefs(); render(); };
 document.getElementById("thB").onclick = ()=>{ prefs.theme="black"; savePrefs(); render(); };
 
@@ -946,6 +1066,42 @@ function ensureAudio() {
     if (audioCtx.state === "suspended") audioCtx.resume();
   } catch(e) {}
 }
+
+/* Synthesized sfx — no audio files. Silent unless prefs.sound is on.
+   Shares the timer's AudioContext so the iOS gesture unlock applies here too. */
+function tone({ freq = 440, dur = 0.18, type = "sine", gain = 0.22, at = 0, slideTo = null }) {
+  try {
+    const ctx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    audioCtx = ctx;
+    if (ctx.state === "suspended") ctx.resume();
+    const t0 = ctx.currentTime + at;
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(freq, t0);
+    if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t0 + dur);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(gain, t0 + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.connect(g); g.connect(ctx.destination);
+    o.start(t0); o.stop(t0 + dur + 0.02);
+  } catch (e) {}
+}
+const sfx = {
+  /* a dull wooden knock for a completed exercise */
+  thunk() { if (!prefs.sound) return; tone({ freq:190, slideTo:90, dur:0.14, type:"triangle", gain:0.25 }); },
+  /* a short rising arpeggio for a personal record */
+  cheer() {
+    if (!prefs.sound) return;
+    [[523,0],[659,0.09],[784,0.18],[1047,0.27]].forEach(([f,at]) =>
+      tone({ freq:f, at, dur:0.22, type:"triangle", gain:0.18 }));
+  },
+  /* warmer, longer version when a day is finished */
+  fanfare() {
+    if (!prefs.sound) return;
+    [[392,0],[523,0.12],[659,0.24],[784,0.36],[1047,0.5]].forEach(([f,at]) =>
+      tone({ freq:f, at, dur:0.3, type:"triangle", gain:0.17 }));
+  }
+};
 
 function beep() {
   try {
@@ -978,6 +1134,7 @@ function tickTimer() {
     clearInterval(tInterval); tInterval = null;
     tbar.classList.remove("running");
     tbar.classList.add("finished");
+    document.getElementById("timerLogan").src = "img/logan-go.png";
     beep();
     setTimeout(()=>tbar.classList.remove("finished"), 4000);
   }
@@ -987,6 +1144,7 @@ function startTimer(seconds) {
   ensureAudio();
   clearInterval(tInterval);
   tbar.classList.remove("finished");
+  document.getElementById("timerLogan").src = "img/logan-rest.png";
   tTotal = seconds;
   tEnd = Date.now() + seconds*1000;
   tbar.classList.add("running");
