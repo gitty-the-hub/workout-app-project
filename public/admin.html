@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Admin">
+<meta name="theme-color" content="#ffffff">
+<meta name="robots" content="noindex">
+<title>Admin · Workout App</title>
+<style>
+  :root, [data-theme="white"] { color-scheme: light;
+    --bg:#ffffff; --card:#ffffff; --ink:#111111; --muted:#8a8a8a;
+    --faint:#c9c9c9; --line:#ececec; --fill:#f6f6f6; --inv:#ffffff; --warn:#b45309; --warn-soft:#fef3c7; --bad:#b91c1c;
+  }
+  [data-theme="black"] { color-scheme: dark;
+    --bg:#0e0e0e; --card:#0e0e0e; --ink:#f2f2f2; --muted:#8f8f8f;
+    --faint:#4a4a4a; --line:#262626; --fill:#1c1c1c; --inv:#0e0e0e; --warn:#fbbf24; --warn-soft:#3a2c05; --bad:#f87171;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+  html { -webkit-text-size-adjust:100%; }
+  body { font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:var(--ink);
+         padding:24px 18px calc(40px + env(safe-area-inset-bottom)); max-width:820px; margin:0 auto; -webkit-font-smoothing:antialiased; }
+  h1 { font-size:1.2rem; font-weight:600; letter-spacing:-0.02em; }
+  .sub { color:var(--muted); font-size:0.8rem; margin-top:3px; }
+  header { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
+  .lbl { font-size:0.62rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--muted); font-weight:600; margin-bottom:6px; display:block; }
+
+  input[type=text], input[type=password], input[type=number], textarea, select {
+    width:100%; border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--ink);
+    padding:10px 11px; font-size:16px; font-family:inherit; }
+  input:focus, textarea:focus, select:focus { outline:none; border-color:var(--ink); }
+  input.bad, textarea.bad { border-color:var(--bad); }
+
+  .btn { border:1px solid var(--ink); background:var(--ink); color:var(--inv); border-radius:8px;
+         padding:11px 18px; font-size:0.85rem; cursor:pointer; font-weight:500; }
+  .btn:disabled { opacity:0.4; cursor:default; }
+  .btn.ghost { background:var(--card); color:var(--ink); }
+  .btn.ghost:hover:not(:disabled) { border-color:var(--ink); }
+  .btn.danger { background:var(--card); color:var(--bad); border-color:var(--line); }
+  .btn.danger:hover { border-color:var(--bad); }
+  .btn.sm { padding:6px 11px; font-size:0.76rem; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+
+  .card { border:1px solid var(--line); border-radius:10px; padding:16px; background:var(--card); margin-bottom:12px; }
+  .msg { border-radius:8px; padding:10px 12px; font-size:0.82rem; margin-bottom:12px; }
+  .msg.info { background:var(--fill); color:var(--muted); }
+  .msg.warn { background:var(--warn-soft); color:var(--warn); }
+  .msg.error { border:1px solid var(--bad); color:var(--bad); }
+  .msg.okmsg { border:1px solid var(--ink); color:var(--ink); }
+  .hidden { display:none !important; }
+
+  .rt-row { display:flex; align-items:center; gap:10px; padding:11px 0; border-top:1px solid var(--line); }
+  .rt-row:first-child { border-top:none; }
+  .rt-row .t { flex:1; font-size:0.9rem; font-weight:500; }
+  .rt-row .m { color:var(--muted); font-size:0.76rem; }
+
+  .drop { border:1px dashed var(--line); border-radius:10px; padding:22px 16px; text-align:center; color:var(--muted); font-size:0.85rem; }
+  .drop.on { border-color:var(--ink); color:var(--ink); }
+  #preview { max-width:100%; max-height:220px; border-radius:8px; margin-top:12px; display:none; border:1px solid var(--line); }
+
+  .meta-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .meta-grid .full { grid-column:1 / -1; }
+  @media (max-width:560px) { .meta-grid { grid-template-columns:1fr; } }
+
+  .day { border:1px solid var(--line); border-radius:10px; margin-bottom:10px; overflow:hidden; }
+  .day-h { display:flex; align-items:center; gap:8px; padding:10px 12px; background:var(--fill); flex-wrap:wrap; }
+  .day-h .dk { font-size:0.68rem; color:var(--muted); font-weight:700; letter-spacing:0.08em; min-width:24px; }
+  .day-h input { flex:1; min-width:110px; font-size:0.85rem; padding:7px 9px; }
+  .blk { padding:8px 12px 12px; border-top:1px solid var(--line); }
+  .blk-h { display:flex; gap:8px; align-items:center; margin:6px 0 8px; }
+  .blk-h input { font-size:0.76rem; padding:6px 9px; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); }
+  .ex-row { display:flex; gap:6px; align-items:center; margin-bottom:6px; flex-wrap:wrap; }
+  .ex-row .nm { flex:3; min-width:150px; font-size:0.85rem; padding:8px 9px; }
+  .ex-row .sc { flex:1.4; min-width:105px; font-size:0.85rem; padding:8px 9px; font-variant-numeric:tabular-nums; }
+  .ex-row .nt { flex:1.2; min-width:95px; font-size:0.8rem; padding:8px 9px; }
+  .x { background:none; border:none; color:var(--faint); cursor:pointer; font-size:0.9rem; padding:6px 8px; }
+  .x:hover { color:var(--bad); }
+  .needs { outline:2px solid var(--warn); }
+  .cost { font-size:0.72rem; color:var(--muted); font-variant-numeric:tabular-nums; }
+  .stickybar { position:sticky; bottom:0; background:var(--bg); border-top:1px solid var(--line); padding:12px 0 calc(12px + env(safe-area-inset-bottom)); display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .spin { display:inline-block; width:13px; height:13px; border:2px solid var(--faint); border-top-color:var(--ink); border-radius:50%; animation:sp .7s linear infinite; vertical-align:-2px; margin-right:7px; }
+  @keyframes sp { to { transform:rotate(360deg); } }
+</style>
+</head>
+<body data-theme="white">
+
+<!-- ================= TOKEN GATE ================= -->
+<div id="gateView">
+  <header><div><h1>Admin</h1><div class="sub">Introduce el token de administrador</div></div></header>
+  <div class="card">
+    <label class="lbl" for="tokIn">Admin token</label>
+    <input type="password" id="tokIn" autocomplete="off" placeholder="••••••••••••">
+    <div id="gateMsg"></div>
+    <div class="row" style="margin-top:12px"><button class="btn" id="tokBtn">Entrar</button></div>
+    <div class="sub" style="margin-top:10px">El token se guarda solo en esta pestaña (sessionStorage) y se olvida al cerrarla.</div>
+  </div>
+</div>
+
+<!-- ================= HOME ================= -->
+<div id="homeView" class="hidden">
+  <header>
+    <div><h1>Admin</h1><div class="sub">Sube una foto o PDF de una rutina y publícala</div></div>
+    <div class="row">
+      <button class="btn ghost sm" id="thToggle">Tema</button>
+      <button class="btn ghost sm" id="logoutBtn">Salir</button>
+    </div>
+  </header>
+
+  <div class="card">
+    <span class="lbl">Nueva rutina</span>
+    <div class="drop" id="drop">
+      Toca para elegir foto o PDF · o arrastra un archivo aquí
+      <input type="file" id="fileIn" accept="image/*,application/pdf" capture="environment" class="hidden">
+    </div>
+    <img id="preview" alt="preview">
+    <div id="fileInfo" class="sub" style="margin-top:8px"></div>
+    <div id="parseMsg"></div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn" id="parseBtn" disabled>Analizar</button>
+      <span class="cost" id="parseCost"></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="lbl">Rutinas publicadas</span>
+    <div id="rtList"><div class="sub">Cargando…</div></div>
+  </div>
+</div>
+
+<!-- ================= REVIEW ================= -->
+<div id="reviewView" class="hidden">
+  <header>
+    <div><h1>Revisar y publicar</h1><div class="sub" id="reviewSub"></div></div>
+    <button class="btn ghost sm" id="cancelBtn">Cancelar</button>
+  </header>
+
+  <div id="reviewMsg"></div>
+
+  <div class="card">
+    <span class="lbl">Datos de la rutina</span>
+    <div class="meta-grid">
+      <div><label class="lbl" for="mTitle">Título</label><input type="text" id="mTitle"></div>
+      <div><label class="lbl" for="mId">ID (kebab-case)</label><input type="text" id="mId"></div>
+      <div class="full"><label class="lbl" for="mSub">Subtítulo (opcional)</label><input type="text" id="mSub"></div>
+      <div><label class="lbl" for="mWeeks">Semanas</label><input type="number" id="mWeeks" min="1" max="52"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="row" style="justify-content:space-between;margin-bottom:8px">
+      <span class="lbl" style="margin:0">Warm up</span>
+      <button class="btn ghost sm" id="addWarm">+ ejercicio</button>
+    </div>
+    <div id="warmList"></div>
+  </div>
+
+  <div id="daysList"></div>
+  <div class="row" style="margin-bottom:16px"><button class="btn ghost sm" id="addDay">+ día</button></div>
+
+  <div class="stickybar">
+    <button class="btn" id="publishBtn">Publicar</button>
+    <span id="publishHint" class="sub"></span>
+  </div>
+</div>
+
+<script>
+/* ===================== Admin console =====================
+   Flow: token gate -> home (upload + published list) -> parse -> review/edit -> publish.
+   The review step is mandatory: raw parser output is never published unseen. */
+
+const $ = id => document.getElementById(id);
+const TOKEN_KEY = "admin.token";
+const THEME_KEY = "admin.theme";
+let token = sessionStorage.getItem(TOKEN_KEY) || "";
+let picked = null;      // { filename, mimeType, dataBase64, bytes }
+let draft = null;       // routine under review
+let lastMeta = null;    // parse metadata (model/cost/usage)
+
+/* ---------- theme ---------- */
+function applyTheme() { document.body.dataset.theme = localStorage.getItem(THEME_KEY) || "white"; }
+$("thToggle").onclick = () => {
+  localStorage.setItem(THEME_KEY, (localStorage.getItem(THEME_KEY) || "white") === "white" ? "black" : "white");
+  applyTheme();
+};
+applyTheme();
+
+/* ---------- messaging ---------- */
+function msg(el, kind, text) { el.innerHTML = text ? `<div class="msg ${kind}">${text}</div>` : ""; }
+
+/* ---------- API ---------- */
+async function api(path, { method = "GET", body } = {}) {
+  const res = await fetch(path, {
+    method,
+    headers: { "Content-Type": "application/json", "X-Admin-Token": token },
+    body: body ? JSON.stringify(body) : undefined
+  });
+  let json;
+  try { json = await res.json(); }
+  catch (e) { throw new Error(`Respuesta no válida del servidor (HTTP ${res.status})`); }
+  if (!json.ok) throw new Error(json.error?.message || `Error ${res.status}`);
+  return json.data;
+}
+
+/* ---------- gate ---------- */
+function showView(v) {
+  ["gateView", "homeView", "reviewView"].forEach(id => $(id).classList.toggle("hidden", id !== v));
+  window.scrollTo(0, 0);
+}
+async function tryToken(t) {
+  token = t;
+  // any admin-gated call proves the token; parse with an intentionally bad body is cheap and never calls the LLM
+  const res = await fetch("/api/parse", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Admin-Token": token },
+    body: JSON.stringify({})
+  });
+  const json = await res.json();
+  if (json.error?.code === "unauthorized") throw new Error("Token inválido");
+  return true; // missing_fields = authorized
+}
+$("tokBtn").onclick = async () => {
+  const t = $("tokIn").value.trim();
+  if (!t) return;
+  msg($("gateMsg"), "info", '<span class="spin"></span>Comprobando…');
+  try {
+    await tryToken(t);
+    sessionStorage.setItem(TOKEN_KEY, t);
+    msg($("gateMsg"), "", "");
+    enterHome();
+  } catch (e) {
+    msg($("gateMsg"), "error", e.message);
+  }
+};
+$("tokIn").addEventListener("keydown", e => { if (e.key === "Enter") $("tokBtn").click(); });
+$("logoutBtn").onclick = () => { sessionStorage.removeItem(TOKEN_KEY); token = ""; showView("gateView"); };
+
+/* ---------- home ---------- */
+async function enterHome() {
+  showView("homeView");
+  loadRoutines();
+}
+async function loadRoutines() {
+  const el = $("rtList");
+  try {
+    const data = await api("/api/routines");
+    if (!data.routines.length) { el.innerHTML = `<div class="sub">Todavía no hay rutinas publicadas.</div>`; return; }
+    el.innerHTML = "";
+    data.routines.forEach(r => {
+      const row = document.createElement("div");
+      row.className = "rt-row";
+      row.innerHTML = `<div><div class="t">${esc(r.title)}</div><div class="m">${esc(r.id)} · ${r.weeks} semanas</div></div>
+        <div style="flex:1"></div>
+        <a class="btn ghost sm" href="/?r=${encodeURIComponent(r.id)}" target="_blank">Abrir</a>
+        <button class="btn ghost sm" data-edit="${esc(r.id)}">Editar</button>
+        <button class="btn danger sm" data-del="${esc(r.id)}">Borrar</button>`;
+      el.appendChild(row);
+    });
+    el.querySelectorAll("[data-del]").forEach(b => b.onclick = () => delRoutine(b.dataset.del));
+    el.querySelectorAll("[data-edit]").forEach(b => b.onclick = () => editRoutine(b.dataset.edit));
+  } catch (e) {
+    el.innerHTML = `<div class="msg error">${esc(e.message)}</div>`;
+  }
+}
+async function delRoutine(id) {
+  if (!confirm(`¿Borrar la rutina "${id}"?\n\nDesaparecerá de la app. El progreso ya guardado en los navegadores de los usuarios no se borra.`)) return;
+  try { await api("/api/routines/" + encodeURIComponent(id), { method: "DELETE" }); loadRoutines(); }
+  catch (e) { alert("No se pudo borrar: " + e.message); }
+}
+async function editRoutine(id) {
+  try {
+    const doc = await api("/api/routines/" + encodeURIComponent(id));
+    openReview(doc, { editing: true });
+  } catch (e) { alert("No se pudo cargar: " + e.message); }
+}
+
+/* ---------- file pick + compress ---------- */
+const drop = $("drop"), fileIn = $("fileIn");
+drop.onclick = () => fileIn.click();
+["dragenter", "dragover"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("on"); }));
+["dragleave", "drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("on"); }));
+drop.addEventListener("drop", e => { if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+fileIn.onchange = () => { if (fileIn.files[0]) handleFile(fileIn.files[0]); };
+
+const MAX_DIM = 1600, JPEG_Q = 0.8;
+function compressImage(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const scale = Math.min(1, MAX_DIM / Math.max(img.width, img.height));
+      const c = document.createElement("canvas");
+      c.width = Math.round(img.width * scale);
+      c.height = Math.round(img.height * scale);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      const dataUrl = c.toDataURL("image/jpeg", JPEG_Q);
+      resolve({ dataBase64: dataUrl.split(",")[1], mimeType: "image/jpeg", preview: dataUrl });
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("No se pudo leer la imagen")); };
+    img.src = url;
+  });
+}
+function readAsBase64(file) {
+  return new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => resolve(String(fr.result).split(",")[1]);
+    fr.onerror = () => reject(new Error("No se pudo leer el archivo"));
+    fr.readAsDataURL(file);
+  });
+}
+async function handleFile(file) {
+  msg($("parseMsg"), "", "");
+  $("parseCost").textContent = "";
+  try {
+    if (file.type === "application/pdf") {
+      const b64 = await readAsBase64(file);
+      picked = { filename: file.name, mimeType: "application/pdf", dataBase64: b64, bytes: file.size };
+      $("preview").style.display = "none";
+    } else if (file.type.startsWith("image/")) {
+      const { dataBase64, mimeType, preview } = await compressImage(file);
+      picked = { filename: file.name, mimeType, dataBase64, bytes: Math.floor(dataBase64.length * 3 / 4) };
+      $("preview").src = preview;
+      $("preview").style.display = "block";
+    } else {
+      throw new Error("Formato no admitido. Usa JPG, PNG, WEBP o PDF.");
+    }
+    const mb = (picked.bytes / 1048576).toFixed(2);
+    $("fileInfo").textContent = `${file.name} · ${mb} MB tras optimizar`;
+    if (picked.bytes > 4.5 * 1048576) {
+      msg($("parseMsg"), "error", "El archivo sigue siendo demasiado grande (máx 4.5 MB). Prueba con una foto más pequeña.");
+      $("parseBtn").disabled = true;
+    } else {
+      $("parseBtn").disabled = false;
+    }
+  } catch (e) {
+    picked = null; $("parseBtn").disabled = true;
+    msg($("parseMsg"), "error", e.message);
+  }
+}
+
+/* ---------- parse ---------- */
+$("parseBtn").onclick = async () => {
+  if (!picked) return;
+  $("parseBtn").disabled = true;
+  msg($("parseMsg"), "info", '<span class="spin"></span>Analizando la imagen con Claude… (~15 s)');
+  try {
+    const data = await api("/api/parse", { method: "POST", body: picked });
+    lastMeta = data;
+    msg($("parseMsg"), "", "");
+    openReview(data.routine, { editing: false });
+  } catch (e) {
+    msg($("parseMsg"), "error", e.message);
+  } finally {
+    $("parseBtn").disabled = false;
+  }
+};
+
+/* ---------- review ---------- */
+function esc(s) { return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+function kebab(s) {
+  return String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
+}
+
+function openReview(doc, { editing }) {
+  draft = JSON.parse(JSON.stringify(doc));
+  draft.warmup = draft.warmup || [];
+  $("reviewSub").textContent = editing
+    ? `Editando una rutina publicada (${doc.id})`
+    : (lastMeta ? `${lastMeta.model} · ${lastMeta.usage.input_tokens}+${lastMeta.usage.output_tokens} tokens · $${lastMeta.costEstimateUSD} · ${(lastMeta.ms/1000).toFixed(1)}s` : "Revisa antes de publicar");
+  $("mTitle").value = draft.title || "";
+  $("mId").value = draft.id || "";
+  $("mSub").value = draft.subtitle || "";
+  $("mWeeks").value = draft.weeks || 6;
+  $("mTitle").oninput = () => { draft.title = $("mTitle").value; if (!idTouched) { draft.id = kebab(draft.title); $("mId").value = draft.id; } checkReady(); };
+  $("mId").oninput = () => { idTouched = true; draft.id = $("mId").value; checkReady(); };
+  $("mSub").oninput = () => { draft.subtitle = $("mSub").value; };
+  $("mWeeks").oninput = () => { draft.weeks = parseInt($("mWeeks").value, 10) || 1; };
+  idTouched = !!editing;
+  msg($("reviewMsg"), "", "");
+  renderWarm(); renderDays(); checkReady();
+  showView("reviewView");
+}
+let idTouched = false;
+
+function exRow(list, i, onChange) {
+  const e = list[i];
+  const row = document.createElement("div");
+  row.className = "ex-row";
+  row.innerHTML = `<input class="nm" placeholder="ejercicio" value="${esc(e.name)}">
+    <input class="sc" placeholder="4×10" value="${esc(e.scheme)}">
+    <input class="nt" placeholder="nota" value="${esc(e.note || "")}">
+    <button class="x" title="Quitar">✕</button>`;
+  const [nm, sc, nt] = row.querySelectorAll("input");
+  if (String(e.name).includes("???")) nm.classList.add("needs");
+  if (String(e.scheme).includes("???")) sc.classList.add("needs");
+  nm.oninput = () => { e.name = nm.value; nm.classList.toggle("needs", nm.value.includes("???")); checkReady(); };
+  sc.oninput = () => { e.scheme = sc.value; sc.classList.toggle("needs", sc.value.includes("???")); checkReady(); };
+  nt.oninput = () => { if (nt.value.trim()) e.note = nt.value; else delete e.note; };
+  row.querySelector(".x").onclick = () => { list.splice(i, 1); onChange(); checkReady(); };
+  return row;
+}
+
+function renderWarm() {
+  const el = $("warmList"); el.innerHTML = "";
+  if (!draft.warmup.length) el.innerHTML = `<div class="sub">Sin calentamiento.</div>`;
+  draft.warmup.forEach((_, i) => el.appendChild(exRow(draft.warmup, i, renderWarm)));
+}
+$("addWarm").onclick = () => { draft.warmup.push({ name: "", scheme: "" }); renderWarm(); checkReady(); };
+
+function renderDays() {
+  const wrap = $("daysList"); wrap.innerHTML = "";
+  draft.days.forEach((d, di) => {
+    d.key = "d" + (di + 1); // keys always follow position
+    const card = document.createElement("div");
+    card.className = "day";
+    const h = document.createElement("div");
+    h.className = "day-h";
+    h.innerHTML = `<span class="dk">${d.key}</span>
+      <input placeholder="Día 1" value="${esc(d.tab)}">
+      <input placeholder="Pecho · Hombro" value="${esc(d.label || "")}">
+      <button class="x" title="Quitar día">✕</button>`;
+    const [tab, label] = h.querySelectorAll("input");
+    tab.oninput = () => { d.tab = tab.value; checkReady(); };
+    label.oninput = () => { d.label = label.value; };
+    h.querySelector(".x").onclick = () => { if (confirm(`¿Quitar ${d.tab || d.key}?`)) { draft.days.splice(di, 1); renderDays(); checkReady(); } };
+    card.appendChild(h);
+
+    d.blocks.forEach((b, bi) => {
+      const bl = document.createElement("div");
+      bl.className = "blk";
+      const bh = document.createElement("div");
+      bh.className = "blk-h";
+      bh.innerHTML = `<input placeholder="sección (opcional)" value="${esc(b.title || "")}" style="flex:1">
+        <button class="btn ghost sm" data-add>+ ej.</button>
+        <button class="x" title="Quitar sección">✕</button>`;
+      bh.querySelector("input").oninput = e => { b.title = e.target.value; };
+      bh.querySelector("[data-add]").onclick = () => { b.exercises.push({ name: "", scheme: "" }); renderDays(); checkReady(); };
+      bh.querySelector(".x").onclick = () => { d.blocks.splice(bi, 1); if (!d.blocks.length) d.blocks.push({ title: "", exercises: [] }); renderDays(); checkReady(); };
+      bl.appendChild(bh);
+      b.exercises.forEach((_, ei) => bl.appendChild(exRow(b.exercises, ei, renderDays)));
+      card.appendChild(bl);
+    });
+
+    const foot = document.createElement("div");
+    foot.className = "blk row";
+    foot.innerHTML = `<button class="btn ghost sm">+ sección</button>`;
+    foot.querySelector("button").onclick = () => { d.blocks.push({ title: "", exercises: [{ name: "", scheme: "" }] }); renderDays(); checkReady(); };
+    card.appendChild(foot);
+    wrap.appendChild(card);
+  });
+}
+$("addDay").onclick = () => {
+  draft.days.push({ key: "d" + (draft.days.length + 1), tab: "Día " + (draft.days.length + 1), label: "", blocks: [{ title: "", exercises: [{ name: "", scheme: "" }] }] });
+  renderDays(); checkReady();
+};
+
+/* client-side mirror of the server's rules; the server validates again anyway */
+function problems() {
+  const p = [];
+  if (!draft.title?.trim()) p.push("Falta el título");
+  if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(draft.id || "")) p.push("El ID debe ser kebab-case (minúsculas, guiones)");
+  if (!(draft.weeks >= 1 && draft.weeks <= 52)) p.push("Semanas debe estar entre 1 y 52");
+  if (!draft.days.length) p.push("Añade al menos un día");
+  let unresolved = 0, empty = 0;
+  const all = [...draft.warmup, ...draft.days.flatMap(d => d.blocks.flatMap(b => b.exercises))];
+  all.forEach(e => {
+    if (String(e.name).includes("???") || String(e.scheme).includes("???")) unresolved++;
+    if (!String(e.name).trim() || !String(e.scheme).trim()) empty++;
+  });
+  draft.days.forEach(d => {
+    if (!d.tab?.trim()) p.push("Todos los días necesitan nombre de pestaña");
+    if (!d.blocks.some(b => b.exercises.length)) p.push(`${d.tab || d.key} no tiene ejercicios`);
+  });
+  if (unresolved) p.push(`${unresolved} campo(s) con "???" sin resolver`);
+  if (empty) p.push(`${empty} ejercicio(s) con nombre o esquema vacío`);
+  return [...new Set(p)];
+}
+function checkReady() {
+  const p = problems();
+  $("publishBtn").disabled = p.length > 0;
+  $("publishHint").textContent = p.length ? p[0] + (p.length > 1 ? ` (+${p.length - 1} más)` : "") : "Todo listo para publicar";
+}
+
+$("cancelBtn").onclick = () => { if (confirm("¿Descartar los cambios?")) { draft = null; enterHome(); } };
+
+$("publishBtn").onclick = async () => {
+  const p = problems();
+  if (p.length) { msg($("reviewMsg"), "warn", p.join(" · ")); return; }
+  const clean = JSON.parse(JSON.stringify(draft));
+  if (!clean.subtitle?.trim()) delete clean.subtitle;
+  clean.days.forEach(d => { if (!d.label) d.label = ""; d.blocks.forEach(b => { if (b.title == null) b.title = ""; }); });
+  if (!clean.warmup.length) delete clean.warmup;
+  $("publishBtn").disabled = true;
+  msg($("reviewMsg"), "info", '<span class="spin"></span>Publicando…');
+  try {
+    await api("/api/routines", { method: "POST", body: clean });
+    msg($("reviewMsg"), "okmsg", `Publicada. <a href="/?r=${encodeURIComponent(clean.id)}" target="_blank">Abrir en la app</a>`);
+    setTimeout(() => { draft = null; enterHome(); }, 1200);
+  } catch (e) {
+    msg($("reviewMsg"), "error", e.message);
+    $("publishBtn").disabled = false;
+  }
+};
+
+/* ---------- boot ---------- */
+(async function boot() {
+  if (!token) { showView("gateView"); return; }
+  try { await tryToken(token); enterHome(); }
+  catch (e) { sessionStorage.removeItem(TOKEN_KEY); showView("gateView"); }
+})();
+</script>
+</body>
+</html>
