@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Body map · preview</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root, [data-theme="white"] {
+    --bg:#F4F3F0; --card:#ffffff; --ink:#221E1A; --muted:#8a8378; --line:#e4e0d8; --fill:#efece5;
+    --wood:#C29B6E; --wood-dark:#7A5433; --green:#5F7043;
+    --bm-base:#d5cfc6; --bm-inert:#bdb6ab; --bm-off:#cac4ba;
+    --bm-primary:#5F7043; --bm-secondary:#C29B6E; --bm-bg:#F4F3F0; --bm-label:#8a8378;
+  }
+  [data-theme="black"] {
+    --bg:#131210; --card:#1A1815; --ink:#F2EFE9; --muted:#948c80; --line:#2c2823; --fill:#221F1B;
+    --wood:#C29B6E; --wood-dark:#8B6236; --green:#7E9455;
+    --bm-base:#332e28; --bm-inert:#2a2620; --bm-off:#38322b;
+    --bm-primary:#7E9455; --bm-secondary:#A87C4F; --bm-bg:#131210; --bm-label:#948c80;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:-apple-system,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--ink);
+         padding:24px 18px 60px; max-width:900px; margin:0 auto; }
+  h1 { font-family:"Oswald",sans-serif; font-size:1.2rem; text-transform:uppercase; letter-spacing:.04em; }
+  .sub { color:var(--muted); font-size:.82rem; margin-top:3px; }
+  header { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:18px; flex-wrap:wrap; }
+  .card { border:1px solid var(--line); background:var(--card); border-radius:12px; padding:16px; margin-bottom:14px; }
+  .lbl { font-family:"Oswald",sans-serif; font-size:.72rem; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); display:block; margin-bottom:8px; }
+  select, input[type=search] { width:100%; border:1px solid var(--line); border-radius:8px; background:var(--card);
+    color:var(--ink); padding:10px 11px; font-size:16px; font-family:inherit; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .btn { border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:8px;
+         padding:7px 13px; font-size:.8rem; cursor:pointer; }
+  .btn.on { background:var(--wood-dark); color:#fff; border-color:var(--wood-dark); }
+  .chip { border:1px solid var(--line); border-radius:999px; padding:4px 11px; font-size:.78rem; color:var(--muted); }
+  .chip.p { background:color-mix(in srgb, var(--green) 16%, transparent); color:var(--green); border-color:transparent; font-weight:600; }
+  .chip.s { background:color-mix(in srgb, var(--wood) 20%, transparent); color:var(--wood-dark); border-color:transparent; }
+  svg { width:100%; height:auto; max-width:520px; display:block; margin:0 auto; }
+  .legend { display:flex; gap:14px; justify-content:center; margin-top:6px; font-size:.75rem; color:var(--muted); }
+  .swatch { display:inline-block; width:11px; height:11px; border-radius:3px; vertical-align:-1px; margin-right:5px; }
+  .keys { display:flex; flex-wrap:wrap; gap:6px; }
+  .keys .btn { font-size:.74rem; padding:6px 10px; }
+  .meta { font-size:.8rem; color:var(--muted); margin-top:10px; }
+  .meta b { color:var(--ink); }
+</style>
+</head>
+<body data-theme="white">
+
+<header>
+  <div>
+    <h1>Body map · preview</h1>
+    <div class="sub">Página de revisión — no forma parte de la app</div>
+  </div>
+  <button class="btn" id="themeBtn">Tema</button>
+</header>
+
+<div class="card">
+  <label class="lbl" for="exSel">Ejercicio del catálogo (200)</label>
+  <input type="search" id="exFilter" placeholder="filtrar… p. ej. bench, squat, row" style="margin-bottom:8px">
+  <select id="exSel" size="1"></select>
+  <div class="row" style="margin-top:12px" id="chips"></div>
+  <div class="meta" id="meta"></div>
+</div>
+
+<div class="card">
+  <div id="svgHost"></div>
+  <div class="legend">
+    <span><i class="swatch" style="background:var(--bm-primary)"></i>Principal</span>
+    <span><i class="swatch" style="background:var(--bm-secondary)"></i>Secundario</span>
+    <span><i class="swatch" style="background:var(--bm-off)"></i>Sin trabajar</span>
+  </div>
+</div>
+
+<div class="card">
+  <span class="lbl">Probar región por región (22 claves)</span>
+  <div class="keys" id="keys"></div>
+  <div class="meta">Toca una clave para ver qué zona se ilumina. Útil para detectar errores de anatomía.</div>
+</div>
+
+<script>
+let CAT = null, LAB = null, svg = null;
+
+async function boot() {
+  [CAT, LAB] = await Promise.all([
+    fetch("data/exercises.json").then(r => r.json()),
+    fetch("data/labels-es.json").then(r => r.json())
+  ]);
+  document.getElementById("svgHost").innerHTML = await fetch("img/bodymap.svg").then(r => r.text());
+  svg = document.getElementById("bodymap");
+
+  fillSelect();
+  buildKeys();
+  document.getElementById("exSel").onchange = e => showExercise(e.target.value);
+  document.getElementById("exFilter").oninput = fillSelect;
+  showExercise(CAT.exercises[0].id);
+}
+
+function fillSelect() {
+  const q = (document.getElementById("exFilter").value || "").toLowerCase();
+  const list = CAT.exercises.filter(e =>
+    !q || e.name.toLowerCase().includes(q) || e.aliases.some(a => a.toLowerCase().includes(q)));
+  const sel = document.getElementById("exSel");
+  sel.innerHTML = list.map(e => `<option value="${e.id}">${e.name}</option>`).join("");
+  if (list.length) showExercise(list[0].id);
+}
+
+function clearMap() {
+  svg.querySelectorAll("[data-m]").forEach(el => el.classList.remove("m-primary", "m-secondary"));
+}
+
+function paint(primary, secondary) {
+  clearMap();
+  secondary.forEach(k => svg.querySelectorAll(`[data-m="${k}"]`).forEach(el => el.classList.add("m-secondary")));
+  primary.forEach(k => svg.querySelectorAll(`[data-m="${k}"]`).forEach(el => {
+    el.classList.remove("m-secondary"); el.classList.add("m-primary");
+  }));
+}
+
+function showExercise(id) {
+  const e = CAT.exercises.find(x => x.id === id);
+  if (!e) return;
+  document.getElementById("exSel").value = id;
+  paint(e.primary, e.secondary);
+  const chip = (k, cls) => `<span class="chip ${cls}">${LAB.muscles[k] || k}</span>`;
+  document.getElementById("chips").innerHTML =
+    e.primary.map(k => chip(k, "p")).join("") + e.secondary.map(k => chip(k, "s")).join("");
+  document.getElementById("meta").innerHTML =
+    `<b>${LAB.equipment[e.equipment] || e.equipment}</b> · ${LAB.mechanic[e.mechanic] || e.mechanic}` +
+    ` · ${LAB.difficulty[e.difficulty] || e.difficulty}` +
+    (e.aliases.length ? `<br>alias: ${e.aliases.join(" · ")}` : "");
+}
+
+function buildKeys() {
+  const host = document.getElementById("keys");
+  host.innerHTML = "";
+  CAT.muscleKeys.forEach(k => {
+    const b = document.createElement("button");
+    b.className = "btn";
+    b.textContent = LAB.muscles[k] || k;
+    b.onclick = () => {
+      const on = b.classList.contains("on");
+      host.querySelectorAll(".btn").forEach(x => x.classList.remove("on"));
+      if (on) { clearMap(); return; }
+      b.classList.add("on");
+      paint([k], []);
+      document.getElementById("chips").innerHTML = `<span class="chip p">${LAB.muscles[k] || k}</span>`;
+      document.getElementById("meta").textContent = `clave: ${k}`;
+    };
+    host.appendChild(b);
+  });
+}
+
+document.getElementById("themeBtn").onclick = () => {
+  document.body.dataset.theme = document.body.dataset.theme === "black" ? "white" : "black";
+};
+
+boot();
+</script>
+</body>
+</html>

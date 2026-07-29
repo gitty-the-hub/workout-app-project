@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 350" id="bodymap">
+<!-- Stylised muscle map. Every coloured region carries data-m="<muscle key>";
+     the app sets class m-primary / m-secondary on those elements. Each half is
+     authored once and mirrored with <use>, so both sides stay identical. -->
+<style>
+  #bodymap .base  { fill: var(--bm-base, #d5cfc6); }
+  #bodymap .inert { fill: var(--bm-inert, #bdb6ab); }
+  #bodymap [data-m] { fill: var(--bm-off, #cac4ba); transition: fill .18s; }
+  #bodymap [data-m].m-secondary { fill: var(--bm-secondary, #C29B6E); }
+  #bodymap [data-m].m-primary   { fill: var(--bm-primary, #5F7043); }
+  #bodymap .sep { fill: none; stroke: var(--bm-bg, #F4F3F0); stroke-width: 1.4; opacity: .85; }
+  #bodymap text { font: 600 10px "Oswald", sans-serif; fill: var(--bm-label, #8a8378); letter-spacing: .12em; }
+</style>
+
+<defs>
+  <!-- ================= FRONT HALF (body's right, x < 100) ================= -->
+  <g id="frontHalf">
+    <!-- upper trapezius: neck to shoulder cap -->
+    <path data-m="traps" d="M97 50 Q86 53 76 64 Q86 62 97 62 Z"/>
+    <!-- anterior deltoid: rounded cap sitting on the shoulder -->
+    <path data-m="anterior-deltoid" d="M78 63 Q65 68 62 82 Q60 92 64 95 Q73 94 78 84 Q81 71 78 63 Z"/>
+    <!-- upper chest (clavicular head) -->
+    <path data-m="upper-chest" d="M98 63 Q88 64 80 69 Q78 74 79 79 Q88 75 98 74 Z"/>
+    <!-- pectoralis major -->
+    <path data-m="chest" d="M98 76 Q88 77 80 81 Q77 91 82 99 Q90 101 98 99 Z"/>
+    <!-- biceps: continues straight down from the deltoid -->
+    <path data-m="biceps" d="M64 96 Q59 104 59 116 Q59 126 63 129 Q70 127 72 114 Q73 101 71 95 Z"/>
+    <!-- forearm -->
+    <path data-m="forearms" d="M62 131 Q56 140 55 154 Q55 165 59 168 Q65 165 66 152 Q68 138 66 131 Z"/>
+    <ellipse class="inert" cx="58" cy="176" rx="6" ry="8"/>
+    <!-- obliques / serratus -->
+    <path data-m="obliques" d="M88 102 Q81 105 80 116 Q80 130 85 141 Q90 139 90 126 Z"/>
+    <!-- hip flexor -->
+    <path data-m="hip-flexors" d="M91 143 Q84 146 84 154 Q88 160 97 159 Q98 150 98 143 Z"/>
+    <!-- quadriceps -->
+    <path data-m="quads" d="M97 162 Q83 165 79 182 Q76 206 80 228 Q86 243 93 241 Q97 216 98 188 Z"/>
+    <!-- adductors: inner thigh strip -->
+    <path data-m="adductors" d="M99 162 Q94 176 93 196 Q93 214 97 228 Q99 204 99 162 Z"/>
+    <!-- shin (tibialis anterior, grouped with calves) -->
+    <path data-m="calves" d="M93 252 Q84 256 82 272 Q81 290 85 301 Q92 300 94 283 Q96 264 93 252 Z"/>
+    <path class="inert" d="M84 304 Q80 314 87 316 L97 316 Q98 309 94 304 Z"/>
+  </g>
+
+  <!-- ================= BACK HALF ================= -->
+  <g id="backHalf">
+    <!-- trapezius: neck -> shoulder -> mid back -->
+    <path data-m="traps" d="M97 48 Q85 52 76 64 Q86 62 95 66 Q99 78 99 92 Q99 66 97 48 Z"/>
+    <path data-m="traps" d="M99 94 Q92 84 87 74 Q84 88 89 102 Q95 100 99 99 Z"/>
+    <!-- posterior deltoid -->
+    <path data-m="posterior-deltoid" d="M78 63 Q65 68 62 82 Q60 92 64 95 Q73 94 78 84 Q81 71 78 63 Z"/>
+    <!-- rotator cuff, tucked under the deltoid -->
+    <ellipse data-m="rotator-cuff" cx="82" cy="76" rx="5" ry="4.5"/>
+    <!-- rhomboids / mid back -->
+    <path data-m="upper-back" d="M99 88 Q91 90 88 98 Q91 107 99 109 Z"/>
+    <!-- latissimus dorsi: wing from armpit down to the waist -->
+    <path data-m="lats" d="M99 100 Q87 102 81 112 Q78 126 85 140 Q94 138 99 130 Z"/>
+    <!-- erector spinae -->
+    <path data-m="lower-back" d="M99 133 Q92 138 90 148 Q93 159 99 160 Z"/>
+    <!-- triceps -->
+    <path data-m="triceps" d="M64 96 Q59 104 59 116 Q59 126 63 129 Q70 127 72 114 Q73 101 71 95 Z"/>
+    <path data-m="forearms" d="M62 131 Q56 140 55 154 Q55 165 59 168 Q65 165 66 152 Q68 138 66 131 Z"/>
+    <ellipse class="inert" cx="58" cy="176" rx="6" ry="8"/>
+    <!-- gluteus -->
+    <path data-m="glutes" d="M99 160 Q86 163 81 174 Q80 187 88 193 Q96 193 99 186 Z"/>
+    <!-- hamstrings -->
+    <path data-m="hamstrings" d="M98 196 Q84 199 80 216 Q77 236 82 248 Q90 249 94 234 Q98 214 98 196 Z"/>
+    <!-- gastrocnemius -->
+    <path data-m="calves" d="M94 254 Q84 258 82 274 Q81 291 86 301 Q93 300 95 284 Q97 266 94 254 Z"/>
+    <path class="inert" d="M84 304 Q80 314 87 316 L97 316 Q98 309 94 304 Z"/>
+  </g>
+</defs>
+
+<!-- ================= FRONT ================= -->
+<g id="front">
+  <!-- silhouette underneath so nothing shows through as a hole -->
+  <circle class="base" cx="100" cy="28" r="16"/>
+  <path data-m="neck" d="M92 42 L108 42 L107 56 L93 56 Z"/>
+  <!-- rectus abdominis, drawn once on the centre line -->
+  <path data-m="core" d="M91 102 Q87 120 89 140 Q95 154 100 154 Q105 154 111 140 Q113 120 109 102 Q100 99 91 102 Z"/>
+  <use href="#frontHalf"/>
+  <use href="#frontHalf" transform="translate(200,0) scale(-1,1)"/>
+  <text x="100" y="338" text-anchor="middle">FRENTE</text>
+</g>
+
+<!-- ================= BACK ================= -->
+<g id="back" transform="translate(220,0)">
+  <circle class="base" cx="100" cy="28" r="16"/>
+  <path data-m="neck" d="M92 42 L108 42 L107 56 L93 56 Z"/>
+  <!-- spine gap so the two halves read as a back -->
+  <path class="base" d="M99 60 L101 60 L101 160 L99 160 Z"/>
+  <use href="#backHalf"/>
+  <use href="#backHalf" transform="translate(200,0) scale(-1,1)"/>
+  <text x="100" y="338" text-anchor="middle">ESPALDA</text>
+</g>
+</svg>
