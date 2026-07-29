@@ -387,7 +387,11 @@ async function pollJob(jobId, startedAt) {
     catch (e) { continue; }               // transient: keep polling
     const secs = Math.round((Date.now() - startedAt) / 1000);
     if (rec.status === "done") return rec;
-    if (rec.status === "error") throw new Error(humanError(rec.code, rec.message));
+    if (rec.status === "error") {
+      const e = new Error(humanError(rec.code, rec.message));
+      e.detail = `${rec.code}: ${rec.message || ""}`;
+      throw e;
+    }
     msg($("parseMsg"), "info", `<span class="spin"></span>Analizando con Claude… ${secs}s`);
   }
   throw new Error("El análisis tardó demasiado (más de 4 minutos). Reinténtalo con un archivo más pequeño.");
@@ -436,7 +440,8 @@ $("parseBtn").onclick = async () => {
     msg($("parseMsg"), "", "");
     openReview(data.routine, { editing: false });
   } catch (e) {
-    msg($("parseMsg"), "error", e.message);
+    msg($("parseMsg"), "error", e.message +
+      (e.detail ? `<details style="margin-top:6px"><summary style="cursor:pointer;opacity:.7">Detalle técnico</summary><div style="font-size:0.72rem;opacity:.8;margin-top:4px;word-break:break-word">${esc(e.detail)}</div></details>` : ""));
   } finally {
     $("parseBtn").disabled = false;
   }

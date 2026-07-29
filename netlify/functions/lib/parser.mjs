@@ -16,7 +16,7 @@ import schema from "../../../schema/routine.schema.json" with { type: "json" };
 
 export const PARSE_MODEL = process.env.PARSE_MODEL || "claude-sonnet-5";
 const MAX_TOKENS = 8000;
-const MAX_ATTEMPTS = 2;
+const MAX_ATTEMPTS = 3;
 
 /* Approximate USD per million tokens — update if pricing changes. */
 const PRICE = { input: 3, output: 15 };
@@ -34,7 +34,12 @@ Rules:
 8. If a day has no internal sections, use a single block with title "".
 9. "id": kebab-case derived from the routine's title plus year if known (e.g. "july-2026"). "title": the routine's own name from the source, or a concise descriptive one.
 10. "weeks": the stated program length; if not stated anywhere, use 6.
-11. Extract EVERY exercise. Never summarize, skip, merge, or invent exercises.`;
+11. Extract EVERY exercise. Never summarize, skip, merge, or invent exercises.
+12. Use ONLY the fields defined in the tool schema: id, title, subtitle, weeks, warmup, days[key,tab,label,blocks[title,exercises[name,scheme,note]]]. Never add other properties anywhere.
+13. Every exercise needs BOTH "name" and "scheme", non-empty. If the source shows a movement without sets/reps, use "—" as the scheme.
+14. Weekly progression rows (e.g. "Semana 1 80%", "Week 3 85%") are not exercises. Put them in the day's block as a block whose title is the progression label, with one entry per week: name = the week ("Semana 1"), scheme = the value ("80%"). If they clearly modify one specific exercise, append them to that exercise's note instead.
+15. Rest or tempo annotations ("2min rest", "RIR 2", "C/L", "lastre") belong in the exercise's note, never as separate exercises.
+16. Column-per-day layouts (Monday…Saturday) are days in left-to-right order. If a column continues in a lower section of the page, append those exercises to the SAME day.`;
 
 /* The tool schema IS the routine schema — but DEREFERENCED: $ref/definitions
    indirection confuses models when used as a tool input_schema, so we inline
@@ -67,6 +72,33 @@ export function costEstimateUSD(usageList) {
   let inTok = 0, outTok = 0;
   usageList.forEach(u => { inTok += u.input_tokens || 0; outTok += u.output_tokens || 0; });
   return +(((inTok * PRICE.input) + (outTok * PRICE.output)) / 1e6).toFixed(4);
+}
+
+/* Keep only schema-known fields; coerce obvious type slips. Never invents data. */
+function sanitize(doc) {
+  if (!doc || typeof doc !== "object") return doc;
+  const ex = e => {
+    const o = { name: String(e?.name ?? "").trim(), scheme: String(e?.scheme ?? "").trim() };
+    if (e?.note != null && String(e.note).trim()) o.note = String(e.note).trim();
+    return o;
+  };
+  const out = {
+    id: String(doc.id ?? "").trim(),
+    title: String(doc.title ?? "").trim(),
+    weeks: Number.isFinite(+doc.weeks) ? Math.round(+doc.weeks) : 6,
+    days: Array.isArray(doc.days) ? doc.days.map((d, i) => ({
+      key: /^d\d+$/.test(d?.key || "") ? d.key : "d" + (i + 1),
+      tab: String(d?.tab ?? `Día ${i + 1}`).trim(),
+      label: String(d?.label ?? "").trim(),
+      blocks: Array.isArray(d?.blocks) ? d.blocks.map(b => ({
+        title: String(b?.title ?? "").trim(),
+        exercises: Array.isArray(b?.exercises) ? b.exercises.map(ex) : []
+      })) : []
+    })) : []
+  };
+  if (doc.subtitle != null && String(doc.subtitle).trim()) out.subtitle = String(doc.subtitle).trim();
+  if (Array.isArray(doc.warmup) && doc.warmup.length) out.warmup = doc.warmup.map(ex);
+  return out;
 }
 
 export class ParseError extends Error {
@@ -121,7 +153,10 @@ export async function parseRoutine({ mimeType, dataBase64 }) {
       throw new ParseError("no_tool_call", "Model returned no submit_routine call", attempts);
     }
 
-    const doc = toolUse.input;
+    /* Models occasionally decorate the payload with well-meant extra fields
+       (rest, percentages, equipment…). Those carry no schema meaning, so drop
+       them instead of burning a repair round on them. */
+    const doc = sanitize(toolUse.input);
     if (validate(doc)) {
       return { routine: doc, model: PARSE_MODEL, attempts, costEstimateUSD: costEstimateUSD(attempts.map(a => a.usage)) };
     }
