@@ -3,18 +3,18 @@ import { parseRoutine, ParseError } from "./lib/parser.mjs";
 
 /* POST /.netlify/functions/parse-background — async parse job.
 
-   Netlify kills synchronous functions at 30s; a 2-page scanned PDF needs more.
-   Background functions (the "-background" filename suffix) answer 202 immediately
-   and may run for minutes, so the work happens here and the result lands in Blobs
-   under job:<jobId>. The client polls /api/parse-status.
+   Synchronous functions are killed at 30s, which multi-page PDFs exceed.
+   Background functions answer 202 immediately and may run for minutes.
 
-   Job record shape:
-     { status:"running", filename, startedAt }
+   IMPORTANT: async invocations cap the request payload at 256KB, so the file
+   is NOT sent here — /api/parse-upload stages it in Blobs first and this
+   function is triggered with just { jobId }.
+
+   Job record shape in the "jobs" store:
+     { status:"queued"|"running", filename, startedAt }
      { status:"done",  routine, model, attempts, usage, costEstimateUSD, ms }
      { status:"error", code, message } */
 
-const ALLOWED = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
-const MAX_BYTES = Math.floor(4.5 * 1024 * 1024);
 const accepted = () => new Response("", { status: 202 });
 
 export default async (req) => {
@@ -22,7 +22,7 @@ export default async (req) => {
   try { body = await req.json(); }
   catch (e) { return new Response("bad json", { status: 400 }); }
 
-  const { jobId, filename, mimeType, dataBase64 } = body || {};
+  const { jobId } = body || {};
   if (!jobId) return new Response("jobId required", { status: 400 });
 
   const store = getStore("jobs");
@@ -32,22 +32,16 @@ export default async (req) => {
     return accepted();
   };
 
-  /* auth is checked after the body so we can report failures through the job record —
-     the client never sees this response (background functions always answer 202) */
+  /* auth checked after the body so failures can be reported through the job
+     record — the client never sees this response (background = always 202) */
   if (req.headers.get("x-admin-token") !== process.env.ADMIN_TOKEN) {
     return fail("unauthorized", "Invalid or missing X-Admin-Token header");
   }
-  if (!filename || !mimeType || !dataBase64) {
-    return fail("missing_fields", "filename, mimeType and dataBase64 are required");
-  }
-  if (!ALLOWED.includes(mimeType)) {
-    return fail("unsupported_type", `mimeType must be one of: ${ALLOWED.join(", ")}`);
-  }
-  const approxBytes = Math.floor(dataBase64.length * 3 / 4);
-  if (approxBytes > MAX_BYTES) {
-    return fail("too_large", `File is ~${(approxBytes / 1048576).toFixed(1)}MB; limit is 4.5MB`);
-  }
 
+  const staged = await store.get("file:" + jobId, { type: "json" });
+  if (!staged) return fail("file_missing", "Staged file not found for this job — upload it again");
+
+  const { filename, mimeType, dataBase64, bytes } = staged;
   await store.setJSON(key, { status: "running", filename, startedAt: Date.now() });
 
   try {
@@ -57,7 +51,7 @@ export default async (req) => {
     const inTok = result.attempts.reduce((n, a) => n + (a.usage?.input_tokens || 0), 0);
     const outTok = result.attempts.reduce((n, a) => n + (a.usage?.output_tokens || 0), 0);
     console.log(JSON.stringify({
-      evt: "parse_bg", job: jobId, file: filename, bytes: approxBytes, model: result.model,
+      evt: "parse_bg", job: jobId, file: filename, bytes, model: result.model,
       attempts: result.attempts.length, input_tokens: inTok, output_tokens: outTok,
       costUSD: result.costEstimateUSD, ms
     }));
@@ -78,6 +72,9 @@ export default async (req) => {
       : "parse_error";
     console.log(JSON.stringify({ evt: "parse_bg_failed", job: jobId, code, msg: String(e.message).slice(0, 200) }));
     await store.setJSON(key, { status: "error", code, message: String(e.message).slice(0, 300), at: Date.now() });
+  } finally {
+    /* the staged file is large and single-use — drop it either way */
+    try { await store.delete("file:" + jobId); } catch (e) {}
   }
 
   return accepted();

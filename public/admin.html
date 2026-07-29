@@ -388,6 +388,9 @@ async function pollJob(jobId, startedAt) {
     catch (e) { continue; }               // transient: keep polling
     const secs = Math.round((Date.now() - startedAt) / 1000);
     if (rec.status === "done") return rec;
+    if (rec.status === "queued" && Date.now() - startedAt > 20000) {
+      throw Object.assign(new Error("El trabajo no arrancó. Reinténtalo."), { detail: "job stuck in queued — background invocation never started" });
+    }
     if (rec.status === "error") {
       const e = new Error(humanError(rec.code, rec.message));
       e.detail = `${rec.code}: ${rec.message || ""}`;
@@ -419,10 +422,15 @@ $("parseBtn").onclick = async () => {
   msg($("parseMsg"), "info", '<span class="spin"></span>Enviando el archivo…');
   try {
     const jobId = (crypto.randomUUID?.() || String(Date.now()) + Math.random().toString(16).slice(2));
+
+    /* Two-step handoff: async invocations cap payloads at 256KB, so the file is
+       staged through a synchronous endpoint (~6MB allowed) and the background
+       job is triggered with just the id. */
+    await api("/api/parse-upload", { method: "POST", body: { jobId, ...picked } });
     const res = await fetch("/.netlify/functions/parse-background", {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-Admin-Token": token },
-      body: JSON.stringify({ jobId, ...picked })
+      body: JSON.stringify({ jobId })
     });
 
     let data;
