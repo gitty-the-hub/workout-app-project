@@ -60,3 +60,27 @@
 
 Known issue carried to Phase 5: Netlify auto-deploy webhook stopped firing after the project was
 temporarily disabled; deploys have been triggered manually since.
+
+## Phase 5 — Hardening (complete)
+- 5.0 Netlify repo relinked; auto-deploy webhook restored
+- 5.1 Rate limit: 15 parses/hour (PARSE_LIMIT_PER_HOUR), 429 with a human message
+- 5.2 Blob sweep: job records >24h and staged files >1h removed on each new job
+- 5.3 Usage ledger: monthly parses/tokens/cost in Blobs, GET /api/usage, shown in admin header
+- 5.4 Publish hardening: control chars stripped, strings clamped, days/blocks/exercises bounded, 400-exercise cap
+- 5.5 UX: install tip (Add to Home Screen), routine-selector empty state
+- 5.6 README rewritten as handover doc (architecture, platform limits, API, env vars, eval, troubleshooting)
+- 5.7 Eval suite grown to 2 cases; hypertrophy ground truth transcribed from the photo
+
+### Final eval baseline (claude-sonnet-5, 3 runs each)
+| case | names | schemes | attempts | cost | time |
+|---|---|---|---|---|---|
+| july-2026 (simple table) | 96.1% | 88.2% | 1 | ~$0.045 | ~13s |
+| hypertrophy-strength (weekday grid, % progressions) | 96.1% | 94.1% | 1 | ~$0.059 | ~21s |
+
+Identical scores across runs: extraction is deterministic in practice without a temperature
+parameter — the forced tool schema does that work.
+
+Known, accepted divergences (representation choices, not defects):
+- "(KB)"-style modifiers: model prefers note, July ground truth keeps them in the name
+- weekly percentages: model emits one entry per week (rule 14), ground truth folds them into the block title
+- Saturday "Rest" cell: model promotes it to a 7th day, ground truth keeps it as a block
