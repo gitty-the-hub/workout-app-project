@@ -1,0 +1,56 @@
+{
+  "muscles": {
+    "chest": "Pectoral",
+    "upper-chest": "Pectoral superior",
+    "anterior-deltoid": "Deltoides anterior",
+    "lateral-deltoid": "Deltoides lateral",
+    "posterior-deltoid": "Deltoides posterior",
+    "triceps": "Tríceps",
+    "biceps": "Bíceps",
+    "forearms": "Antebrazos",
+    "lats": "Dorsal ancho",
+    "upper-back": "Espalda alta",
+    "traps": "Trapecio",
+    "lower-back": "Lumbares",
+    "core": "Core",
+    "obliques": "Oblicuos",
+    "glutes": "Glúteos",
+    "quads": "Cuádriceps",
+    "hamstrings": "Isquiotibiales",
+    "adductors": "Aductores",
+    "calves": "Gemelos",
+    "hip-flexors": "Flexores de cadera",
+    "rotator-cuff": "Manguito rotador",
+    "neck": "Cuello"
+  },
+  "equipment": {
+    "barbell": "Barra",
+    "dumbbell": "Mancuernas",
+    "machine": "Máquina",
+    "cable": "Polea",
+    "bodyweight": "Peso corporal",
+    "kettlebell": "Kettlebell",
+    "band": "Banda",
+    "plate": "Disco",
+    "ball": "Fitball"
+  },
+  "mechanic": {
+    "compound": "Compuesto",
+    "isolation": "Aislamiento",
+    "isometric": "Isométrico"
+  },
+  "difficulty": {
+    "beginner": "Principiante",
+    "intermediate": "Intermedio",
+    "advanced": "Avanzado"
+  },
+  "ui": {
+    "primary": "Músculo principal",
+    "secondary": "Secundarios",
+    "front": "Frente",
+    "back": "Espalda",
+    "matched": "Coincide con",
+    "noMatch": "Sin coincidencia en el catálogo",
+    "close": "Cerrar"
+  }
+}
