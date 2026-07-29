@@ -157,6 +157,17 @@ export async function parseRoutine({ mimeType, dataBase64 }) {
        (rest, percentages, equipment…). Those carry no schema meaning, so drop
        them instead of burning a repair round on them. */
     const doc = sanitize(toolUse.input);
+
+    /* An empty payload means the model found no routine in the file (wrong
+       document, unreadable scan). Retrying cannot fix that, so fail fast with
+       an honest code instead of burning attempts on schema complaints. */
+    const exCount = (doc.days || []).reduce((n, d) =>
+      n + (d.blocks || []).reduce((m, b) => m + (b.exercises || []).length, 0), 0);
+    if (!doc.days?.length || exCount === 0) {
+      throw new ParseError("no_routine_found",
+        "The file does not appear to contain a workout routine.", attempts);
+    }
+
     if (validate(doc)) {
       return { routine: doc, model: PARSE_MODEL, attempts, costEstimateUSD: costEstimateUSD(attempts.map(a => a.usage)) };
     }
