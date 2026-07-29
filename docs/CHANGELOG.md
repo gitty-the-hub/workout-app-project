@@ -39,3 +39,24 @@
 - eval/run-eval.mjs harness vs July photo ground truth: 96.1% name accuracy avg, threshold 95% -> PASS; attempts always 1; ~$0.04/parse, ~15s
 - Field lessons: temperature deprecated on sonnet-5 (removed); $ref-based tool schemas confuse the model (deref fix); secret env vars are write-only via CLI (local session key for evals)
 - Production acceptance: July photo parsed end-to-end via deployed endpoint, days expanded, notes extracted, warmup separated
+
+## Phase 4 — Admin upload/review/publish UI (complete)
+- public/admin.html: unlisted console, token gate (sessionStorage), white/black theme
+- Three explicit sources: Cámara / Galería / Archivo; drag-drop kept desktop-only
+- Client-side image downscale (1600px, JPEG q0.8) before upload; friendly rejection of .docx/.pages/etc
+- Full review editor: title/id/subtitle/weeks, warmup and every day/block/exercise editable, add/remove, ??? flagged, publish blocked until clean
+- Publish -> POST /api/routines (server re-validates); routine list with open/edit/delete
+- Tracker supports ?r=<id> deep links
+
+## Phase 4.5 — Async parse pipeline (complete)
+- Hit the real limit: synchronous functions are killed at 30s (2-page scanned PDF failed with 502, "No log", duration 30485ms)
+- Background function (parse-background) + job records in Blobs + /api/parse-status polling with elapsed counter
+- Second real limit: async invocations cap payloads at 256KB (fast 500s at 96/664ms on a 0.27MB image)
+  -> /api/parse-upload stages the file in Blobs (sync, ~6MB allowed); background is triggered with { jobId } only; staged file deleted after the job
+- Sync fallback when the background job cannot be started; stuck-queued detection
+- Parser hardening from real routines: rules for weekly-percentage grids, column-per-day layouts, continuation sections, rest/RIR notes; sanitize unknown fields before validation; 3 attempts; empty payload -> no_routine_found
+- Human-readable error mapping + "Detalle técnico" expander in the UI
+- Verified end to end: photo -> parse -> review -> publish (Hypertophy - Strength, 5 weeks, 6 days)
+
+Known issue carried to Phase 5: Netlify auto-deploy webhook stopped firing after the project was
+temporarily disabled; deploys have been triggered manually since.
