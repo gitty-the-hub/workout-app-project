@@ -139,13 +139,19 @@
   .wrow .last { font-size:0.75rem; color:var(--muted); }
   .wrow .last b { color:var(--ink); font-weight:600; }
   .wrow .trend-up { color:var(--ink); font-weight:600; }
-  .wrow .histbtn { background:none; border:none; color:var(--muted); font-size:0.75rem; cursor:pointer; text-decoration:underline; text-underline-offset:2px; padding:8px 6px; }
-  .wrow .histbtn:hover { color:var(--ink); }
-  .wrow .chartbtn { background:none; border:1px solid var(--line); border-radius:6px; padding:2px 7px; font-size:0.7rem; cursor:pointer; color:var(--muted); }
-  .wrow .musclebtn { background:none; border:none; color:var(--green); font-size:0.75rem; cursor:pointer;
-                     text-decoration:underline; text-underline-offset:2px; padding:8px 6px; font-weight:500; }
-  .wrow .musclebtn:hover { color:var(--ink); }
-  .wrow .chartbtn:hover { border-color:var(--ink); color:var(--ink); }
+  /* one icon-button family for the row's secondary actions: square, hairline
+     border, 17px stroked glyph — same language as the week pills and tabs */
+  .wrow .iconbtn { width:36px; height:36px; padding:0; display:inline-flex; align-items:center;
+                   justify-content:center; gap:4px; border:1px solid var(--line); border-radius:9px;
+                   background:var(--card); color:var(--muted); cursor:pointer;
+                   transition:border-color .15s, color .15s, transform .12s; }
+  .wrow .iconbtn:hover { border-color:var(--ink); color:var(--ink); }
+  .wrow .iconbtn:active { transform:scale(.94); }
+  .wrow .iconbtn.on { border-color:var(--ink); color:var(--ink); }
+  .wrow .iconbtn svg { width:17px; height:17px; display:block; }
+  .wrow .iconbtn.wide { width:auto; padding:0 10px; font-size:0.72rem; font-variant-numeric:tabular-nums; }
+  .wrow .iconbtn.muscle { color:var(--green); border-color:color-mix(in srgb, var(--green) 32%, var(--line)); }
+  .wrow .iconbtn.muscle:hover { border-color:var(--green); }
   .pr-badge { border:1px solid var(--green); color:var(--green); background:color-mix(in srgb, var(--green) 10%, transparent); border-radius:6px; padding:0px 6px; font-size:0.66rem; font-weight:600; white-space:nowrap; letter-spacing:0.04em; }
   .hist { margin-top:8px; margin-left:28px; border-left:2px solid var(--line); padding:4px 0 4px 12px; display:none; }
   .hist.open { display:block; }
@@ -462,7 +468,9 @@ const COPY = {
     loadError: "No se pudieron cargar las rutinas. Recarga la página.",
     celebrateDay: "Día completado",
     celebrateWeek: "Semana completada",
-    musclesBtn: "Músculos",
+    musclesBtn: "Músculos que trabaja",
+    histTitle: "Historial de pesos",
+    chartTitle: "Ver en la gráfica",
     sheetPrimary: "Músculo principal",
     sheetSecondary: "Secundarios",
     sheetMatched: (n) => `≈ ${n}`,
@@ -502,7 +510,9 @@ const COPY = {
     loadError: "No se pudieron cargar las rutinas. Recarga la página.",
     celebrateDay: "Día completo. Logan lo vio todo.",
     celebrateWeek: "Semana entera. Un anillo más.",
-    musclesBtn: "Músculos",
+    musclesBtn: "Qué músculos toca",
+    histTitle: "Historial de pesos",
+    chartTitle: "Ver en la gráfica",
     sheetPrimary: "Lo que más trabaja",
     sheetSecondary: "También entra",
     sheetMatched: (n) => `≈ ${n}`,
@@ -979,6 +989,13 @@ noteEl.addEventListener("input", ()=>{
   }, 400);
 });
 
+/* inline icons, stroked so they inherit colour from the button */
+const ICON = {
+  hist: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v4.8l3.2 2"/></svg>',
+  muscle: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4.3" r="2.3"/><path d="M7.4 8.2h9.2M8.6 8.2c-2 .5-3.1 1.7-3.4 3.6l-.5 3.2M15.4 8.2c2 .5 3.1 1.7 3.4 3.6l.5 3.2"/><path d="M9 8.6v4.2h6V8.6M9.4 12.8 8.7 21M14.6 12.8l.7 8.2"/></svg>',
+  chart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M7.5 15.5l3.5-4 3 2.4 4-5.4"/></svg>'
+};
+
 /* ---------- weight logging ---------- */
 function logWeight(name, inputEl) {
   const v = parseFloat(inputEl.value);
@@ -1147,18 +1164,19 @@ function render() {
         <button class="logbtn">Log</button>
         ${last ? `<span class="last">últ: <b>${fmtW(last)}</b> <span style="opacity:.7">(S${last.wk})</span>${lastIsPr?' <span class="pr-badge">PR</span>':(isUp?' <span class="trend-up">↑</span>':'')}</span>` : ''}
         ${best && hist.length>1 ? `<span class="last">mejor: <b>${fmtW(best)}</b></span>` : ''}
-        <button class="histbtn">Historial (${hist.length})</button>
-        ${e.ref ? `<button class="musclebtn">${t("musclesBtn")}</button>` : ''}
-        ${hist.length ? `<button class="chartbtn" title="Ver en gráfica">◇</button>` : ''}`;
+        <button class="iconbtn${hist.length?" wide":""}${openHist===name?" on":""}" data-act="hist"
+                title="${t("histTitle")}" aria-label="${t("histTitle")}">${ICON.hist}${hist.length?`<span>${hist.length}</span>`:""}</button>
+        ${e.ref ? `<button class="iconbtn muscle" data-act="muscle" title="${t("musclesBtn")}" aria-label="${t("musclesBtn")}">${ICON.muscle}</button>` : ""}
+        ${hist.length ? `<button class="iconbtn" data-act="chart" title="${t("chartTitle")}" aria-label="${t("chartTitle")}">${ICON.chart}</button>` : ""}`;
       const inp = wrow.querySelector("input");
       wrow.querySelector(".logbtn").onclick = ()=>logWeight(name, inp);
       inp.addEventListener("keydown", ev=>{ if(ev.key==="Enter") logWeight(name, inp); });
-      wrow.querySelector(".histbtn").onclick = ()=>{
+      wrow.querySelector('[data-act="hist"]').onclick = ()=>{
         openHist = openHist===name ? null : name; render();
       };
-      const mb = wrow.querySelector(".musclebtn");
+      const mb = wrow.querySelector('[data-act="muscle"]');
       if (mb) mb.onclick = () => openSheet(e);
-      const cb = wrow.querySelector(".chartbtn");
+      const cb = wrow.querySelector('[data-act="chart"]');
       if (cb) cb.onclick = ()=>{
         state._chartEx = name; save(); renderChart();
         document.querySelector(".chartcard").scrollIntoView({behavior:"smooth"});
