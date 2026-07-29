@@ -1,5 +1,6 @@
 import { getStore } from "@netlify/blobs";
 import { ok, err, requireAdmin } from "./lib/util.mjs";
+import { checkRate, sweepJobs } from "./lib/limits.mjs";
 
 /* POST /api/parse-upload — stage a file for an async parse job.
 
@@ -34,7 +35,14 @@ export default async (req) => {
     return err("too_large", `File is ~${(approxBytes / 1048576).toFixed(1)}MB; limit is 4.5MB`, 413);
   }
 
+  const rate = await checkRate();
+  if (!rate.allowed) {
+    return err("rate_limited",
+      `Límite de ${rate.limit} análisis por hora alcanzado. Vuelve a intentarlo en ~${rate.resetsInMin} min.`, 429);
+  }
+
   const store = getStore("jobs");
+  sweepJobs();  // fire-and-forget housekeeping
   await store.setJSON("file:" + jobId, { filename, mimeType, dataBase64, bytes: approxBytes, at: Date.now() });
   await store.setJSON("job:" + jobId, { status: "queued", filename, startedAt: Date.now() });
 

@@ -1,5 +1,6 @@
 import { ok, err, requireAdmin } from "./lib/util.mjs";
 import { parseRoutine, ParseError, PARSE_MODEL } from "./lib/parser.mjs";
+import { checkRate, recordUsage } from "./lib/limits.mjs";
 
 /* POST /api/parse — extract a workout routine from an uploaded photo/PDF.
    Request:  { filename, mimeType, dataBase64 }  + X-Admin-Token header
@@ -31,6 +32,12 @@ export default async (req) => {
     return err("too_large", `File is ~${(approxBytes / 1048576).toFixed(1)}MB; limit is 4.5MB`, 413);
   }
 
+  const rate = await checkRate();
+  if (!rate.allowed) {
+    return err("rate_limited",
+      `Límite de ${rate.limit} análisis por hora alcanzado. Vuelve a intentarlo en ~${rate.resetsInMin} min.`, 429);
+  }
+
   try {
     const t0 = Date.now();
     const result = await parseRoutine({ mimeType, dataBase64 });
@@ -43,6 +50,7 @@ export default async (req) => {
       attempts: result.attempts.length, input_tokens: inTok, output_tokens: outTok,
       costUSD: result.costEstimateUSD, ms: totalMs
     }));
+    await recordUsage({ inputTokens: inTok, outputTokens: outTok, costUSD: result.costEstimateUSD });
     return ok({
       routine: result.routine,
       model: result.model,

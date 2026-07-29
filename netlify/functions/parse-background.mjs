@@ -1,5 +1,6 @@
 import { getStore } from "@netlify/blobs";
 import { parseRoutine, ParseError } from "./lib/parser.mjs";
+import { recordUsage } from "./lib/limits.mjs";
 
 /* POST /.netlify/functions/parse-background — async parse job.
 
@@ -55,6 +56,7 @@ export default async (req) => {
       attempts: result.attempts.length, input_tokens: inTok, output_tokens: outTok,
       costUSD: result.costEstimateUSD, ms
     }));
+    await recordUsage({ inputTokens: inTok, outputTokens: outTok, costUSD: result.costEstimateUSD });
     await store.setJSON(key, {
       status: "done",
       routine: result.routine,
