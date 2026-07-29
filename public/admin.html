@@ -94,6 +94,24 @@
   .needs { outline:2px solid var(--warn); }
   .cost { font-size:0.72rem; color:var(--muted); font-variant-numeric:tabular-nums; }
   .stickybar { position:sticky; bottom:0; background:var(--bg); border-top:1px solid var(--line); padding:12px 0 calc(12px + env(safe-area-inset-bottom)); display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  /* match review */
+  .mt-row { display:grid; grid-template-columns:1fr auto; gap:8px 10px; align-items:center;
+            padding:9px 0; border-top:1px solid var(--line); }
+  .mt-row:first-of-type { border-top:none; }
+  .mt-name { font-size:0.88rem; font-weight:500; }
+  .mt-sub { font-size:0.74rem; color:var(--muted); margin-top:2px; }
+  .mt-sub b { color:var(--ink); font-weight:600; }
+  .mt-badge { font-size:0.66rem; border-radius:999px; padding:2px 9px; white-space:nowrap; font-weight:600; }
+  .mt-badge.ok   { background:color-mix(in srgb, var(--green) 16%, transparent); color:var(--green); }
+  .mt-badge.mid  { background:var(--warn-soft); color:var(--warn); }
+  .mt-badge.none { border:1px solid var(--line); color:var(--muted); }
+  .mt-badge.skip { border:1px dashed var(--line); color:var(--faint); }
+  .mt-pick { grid-column:1 / -1; display:none; gap:6px; }
+  .mt-pick.on { display:flex; flex-wrap:wrap; }
+  .mt-pick input { flex:1; min-width:150px; font-size:0.85rem; padding:7px 9px; }
+  .mt-pick select { flex:2; min-width:190px; font-size:0.85rem; padding:7px 9px; }
+  .mt-stats { font-size:0.78rem; color:var(--muted); margin-bottom:10px; }
+  .mt-stats b { color:var(--ink); }
   .parse-logan { display:none; width:96px; height:96px; object-fit:contain; margin:10px auto 0; animation:sway 3s ease-in-out infinite; }
   .parse-logan.on { display:block; }
   @keyframes sway { 0%,100%{transform:rotate(-2deg) translateY(0);} 50%{transform:rotate(2deg) translateY(-3px);} }
@@ -187,6 +205,16 @@
 
   <div id="daysList"></div>
   <div class="row" style="margin-bottom:16px"><button class="btn ghost sm" id="addDay">+ día</button></div>
+
+  <div class="card">
+    <div class="row" style="justify-content:space-between;margin-bottom:8px">
+      <span class="lbl" style="margin:0">Ejercicios reconocidos</span>
+      <button class="btn ghost sm" id="matchAiBtn">Buscar los que faltan con IA</button>
+    </div>
+    <div class="mt-stats" id="matchStats">—</div>
+    <div id="matchList"></div>
+    <div class="sub" style="margin-top:10px">Cada ejercicio se enlaza al catálogo para mostrar los músculos que trabaja. «Sin coincidencia» simplemente no muestra guía.</div>
+  </div>
 
   <div class="stickybar">
     <button class="btn" id="publishBtn">Publicar</button>
@@ -498,6 +526,124 @@ $("parseBtn").onclick = async () => {
   }
 };
 
+/* ---------- catalog + match review ---------- */
+let CAT = null, LABELS = null, matchReport = null;
+
+async function loadCatalog() {
+  if (CAT) return;
+  try {
+    const [c, l] = await Promise.all([
+      fetch("data/exercises.json").then(r => r.json()),
+      fetch("data/labels-es.json").then(r => r.json())
+    ]);
+    CAT = c; LABELS = l;
+  } catch (e) { CAT = { exercises: [] }; LABELS = { muscles: {} }; }
+}
+const catName = id => (CAT?.exercises.find(e => e.id === id) || {}).name || id;
+const catEntry = id => CAT?.exercises.find(e => e.id === id) || null;
+
+/* free pass on open; the AI rung is a deliberate extra click */
+async function runMatch(useLLM) {
+  if (!draft) return;
+  const stats = $("matchStats");
+  stats.innerHTML = '<span class="spin"></span>' + (useLLM ? "Consultando a Claude…" : "Buscando en el catálogo…");
+  try {
+    const data = await api("/api/match", { method: "POST", body: { routine: draft, useLLM: !!useLLM } });
+    matchReport = data;
+    applyRefs();
+    renderMatches();
+  } catch (e) {
+    stats.innerHTML = `<span style="color:var(--bad)">${esc(e.message)}</span>`;
+  }
+}
+
+/* write refs from the report onto the draft (all entries sharing a name) */
+function applyRefs() {
+  if (!matchReport) return;
+  const byName = new Map();
+  matchReport.items.forEach(i => { if (i.ref) byName.set(i.name, { ref: i.ref, score: i.score }); });
+  eachExercise(e => {
+    const m = byName.get(e.name);
+    if (m) { e.ref = m.ref; e.refScore = m.score; }
+    else { delete e.ref; delete e.refScore; }
+  });
+}
+
+function eachExercise(fn) {
+  (draft.warmup || []).forEach(fn);
+  (draft.days || []).forEach(d => (d.blocks || []).forEach(b => (b.exercises || []).forEach(fn)));
+}
+
+/* manual override: applies to every entry with that name */
+function setRef(name, id) {
+  eachExercise(e => {
+    if (e.name !== name) return;
+    if (id) { e.ref = id; e.refScore = 1; } else { delete e.ref; delete e.refScore; }
+  });
+  matchReport.items.forEach(i => {
+    if (i.name !== name) return;
+    i.ref = id || null; i.how = id ? "manual" : "none"; i.score = id ? 1 : 0;
+  });
+  matchReport.unmatched = [...new Set(matchReport.items.filter(i => !i.ref && !i.skip).map(i => i.name))];
+  renderMatches();
+}
+
+function renderMatches() {
+  const host = $("matchList"), stats = $("matchStats");
+  if (!matchReport) { host.innerHTML = ""; stats.textContent = "—"; return; }
+
+  /* one row per unique name */
+  const seen = new Map();
+  matchReport.items.forEach(i => { if (!seen.has(i.name)) seen.set(i.name, i); });
+  const rows = [...seen.values()];
+  const matched = rows.filter(r => r.ref).length;
+  const skipped = rows.filter(r => r.skip).length;
+  const missing = rows.length - matched - skipped;
+  stats.innerHTML = `<b>${matched}</b> de <b>${rows.length - skipped}</b> enlazados` +
+    (missing ? ` · <b>${missing}</b> sin coincidencia` : " · todo enlazado") +
+    (skipped ? ` · ${skipped} ignorado(s)` : "") +
+    (matchReport.llm ? ` · IA resolvió ${matchReport.llm.resolved}/${matchReport.llm.asked}` : "");
+
+  const options = CAT.exercises.slice().sort((a, b) => a.name.localeCompare(b.name));
+  host.innerHTML = "";
+  rows.sort((a, b) => (a.ref ? 1 : 0) - (b.ref ? 1 : 0) || a.name.localeCompare(b.name));
+  rows.forEach(r => {
+    const row = document.createElement("div");
+    row.className = "mt-row";
+    const badge = r.skip ? '<span class="mt-badge skip">ignorado</span>'
+      : !r.ref ? '<span class="mt-badge none">sin coincidencia</span>'
+      : r.how === "manual" ? '<span class="mt-badge ok">manual</span>'
+      : `<span class="mt-badge ${r.score >= 0.9 ? "ok" : "mid"}">${r.how} ${Math.round(r.score * 100)}%</span>`;
+    const hint = !r.ref && r.suggestion?.id
+      ? `<div class="mt-sub">sugerencia: <b>${esc(catName(r.suggestion.id))}</b> (${Math.round(r.suggestion.score * 100)}%)</div>` : "";
+    const muscles = r.ref && catEntry(r.ref)
+      ? `<div class="mt-sub">→ <b>${esc(catName(r.ref))}</b> · ${catEntry(r.ref).primary.map(k => LABELS.muscles[k] || k).join(", ")}</div>` : "";
+    row.innerHTML = `<div><div class="mt-name">${esc(r.name)}</div>${muscles}${hint}</div>
+      <div class="row">${badge}<button class="btn ghost sm" data-edit>cambiar</button></div>
+      <div class="mt-pick">
+        <input type="text" placeholder="filtrar catálogo…">
+        <select><option value="">— sin coincidencia —</option>${options.map(o => `<option value="${o.id}" ${o.id === r.ref ? "selected" : ""}>${esc(o.name)}</option>`).join("")}</select>
+        ${r.suggestion?.id && !r.ref ? `<button class="btn sm" data-accept="${esc(r.suggestion.id)}">usar sugerencia</button>` : ""}
+      </div>`;
+    const pick = row.querySelector(".mt-pick");
+    const sel = row.querySelector("select");
+    const filt = row.querySelector("input");
+    row.querySelector("[data-edit]").onclick = () => pick.classList.toggle("on");
+    filt.oninput = () => {
+      const q = filt.value.toLowerCase();
+      sel.innerHTML = `<option value="">— sin coincidencia —</option>` +
+        options.filter(o => !q || o.name.toLowerCase().includes(q) || o.aliases.some(a => a.toLowerCase().includes(q)))
+               .map(o => `<option value="${o.id}" ${o.id === r.ref ? "selected" : ""}>${esc(o.name)}</option>`).join("");
+    };
+    sel.onchange = () => setRef(r.name, sel.value || null);
+    const acc = row.querySelector("[data-accept]");
+    if (acc) acc.onclick = () => setRef(r.name, acc.dataset.accept);
+    host.appendChild(row);
+  });
+}
+
+$("matchAiBtn").onclick = () => runMatch(true);
+
 /* ---------- review ---------- */
 function esc(s) { return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
 function kebab(s) {
@@ -523,6 +669,8 @@ function openReview(doc, { editing }) {
   msg($("reviewMsg"), "", "");
   renderWarm(); renderDays(); checkReady();
   showView("reviewView");
+  matchReport = null; renderMatches();
+  loadCatalog().then(() => runMatch(false));
 }
 let idTouched = false;
 

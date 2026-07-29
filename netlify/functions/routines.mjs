@@ -31,6 +31,13 @@ function harden(doc) {
     const o = { name: clean(e?.name), scheme: clean(e?.scheme, 60) };
     const note = clean(e?.note, 80);
     if (note) o.note = note;
+    // catalog match survives hardening (validated shape, bounded length)
+    const ref = clean(e?.ref, 60);
+    if (ref && /^[a-z0-9]+(-[a-z0-9]+)*$/.test(ref)) {
+      o.ref = ref;
+      const sc = Number(e?.refScore);
+      if (Number.isFinite(sc) && sc >= 0 && sc <= 1) o.refScore = +sc.toFixed(3);
+    }
     return o;
   };
   const out = {
