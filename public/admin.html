@@ -356,13 +356,82 @@ async function handleFile(file) {
   }
 }
 
-/* ---------- parse ---------- */
+/* ---------- parse (async job + polling, sync fallback) ----------
+   Synchronous functions die at 30s, which a multi-page PDF exceeds. So the file
+   goes to a background function that answers 202 immediately and writes its
+   result to Blobs; we poll /api/parse-status until done. If background functions
+   aren't available (404/405), we fall back to the synchronous /api/parse. */
+const POLL_MS = 2000, MAX_WAIT_MS = 4 * 60 * 1000;
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+function humanError(code, message) {
+  const map = {
+    unauthorized: "Token de administrador inválido. Vuelve a entrar.",
+    unsupported_type: "Formato no admitido. Usa JPG, PNG, WEBP o PDF.",
+    too_large: "El archivo es demasiado grande (máx. 4.5 MB).",
+    rate_limited: "Límite de la API alcanzado. Espera unos segundos y reinténtalo.",
+    api_overloaded: "La API está saturada ahora mismo. Reinténtalo en un momento.",
+    api_key_invalid: "La clave de la API no es válida en el servidor.",
+    no_tool_call: "El modelo no devolvió una rutina. Prueba con una imagen más nítida.",
+    schema_invalid_after_retry: "No se pudo estructurar la rutina. Prueba con una foto más clara o con menos páginas.",
+    timeout: "El análisis tardó demasiado. Prueba con una foto o un PDF de menos páginas."
+  };
+  return map[code] || message || "Error inesperado.";
+}
+
+async function pollJob(jobId, startedAt) {
+  while (Date.now() - startedAt < MAX_WAIT_MS) {
+    await sleep(POLL_MS);
+    let rec;
+    try { rec = await api("/api/parse-status?job=" + encodeURIComponent(jobId)); }
+    catch (e) { continue; }               // transient: keep polling
+    const secs = Math.round((Date.now() - startedAt) / 1000);
+    if (rec.status === "done") return rec;
+    if (rec.status === "error") throw new Error(humanError(rec.code, rec.message));
+    msg($("parseMsg"), "info", `<span class="spin"></span>Analizando con Claude… ${secs}s`);
+  }
+  throw new Error("El análisis tardó demasiado (más de 4 minutos). Reinténtalo con un archivo más pequeño.");
+}
+
+async function parseSync() {
+  const res = await fetch("/api/parse", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Admin-Token": token },
+    body: JSON.stringify(picked)
+  });
+  if (res.status === 502 || res.status === 504) throw new Error(humanError("timeout"));
+  const json = await res.json().catch(() => null);
+  if (!json) throw new Error(`Respuesta no válida del servidor (HTTP ${res.status})`);
+  if (!json.ok) throw new Error(humanError(json.error?.code, json.error?.message));
+  return json.data;
+}
+
 $("parseBtn").onclick = async () => {
   if (!picked) return;
   $("parseBtn").disabled = true;
-  msg($("parseMsg"), "info", '<span class="spin"></span>Analizando la imagen con Claude… (~15 s)');
+  $("parseCost").textContent = "";
+  const startedAt = Date.now();
+  msg($("parseMsg"), "info", '<span class="spin"></span>Enviando el archivo…');
   try {
-    const data = await api("/api/parse", { method: "POST", body: picked });
+    const jobId = (crypto.randomUUID?.() || String(Date.now()) + Math.random().toString(16).slice(2));
+    const res = await fetch("/.netlify/functions/parse-background", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Admin-Token": token },
+      body: JSON.stringify({ jobId, ...picked })
+    });
+
+    let data;
+    if (res.status === 202) {
+      msg($("parseMsg"), "info", '<span class="spin"></span>Analizando con Claude… 0s');
+      data = await pollJob(jobId, startedAt);
+    } else if (res.status === 404 || res.status === 405) {
+      msg($("parseMsg"), "info", '<span class="spin"></span>Analizando con Claude… (modo directo)');
+      data = await parseSync();
+    } else {
+      const t = await res.text().catch(() => "");
+      throw new Error(`No se pudo iniciar el análisis (HTTP ${res.status}). ${t.slice(0, 120)}`);
+    }
+
     lastMeta = data;
     msg($("parseMsg"), "", "");
     openReview(data.routine, { editing: false });
