@@ -7,19 +7,39 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Workout App">
-<meta name="theme-color" content="#ffffff">
-<title>Workout App</title>
+<meta name="theme-color" content="#F4F3F0">
+<title>Logan · Gym Routine</title>
+<link rel="icon" href="img/favicon-64.png" sizes="64x64">
+<link rel="icon" href="img/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
 <style>
-  /* ============ THEMES ============ */
+  /* ============ THEMES ============
+     Palette derived from the Logan mascot: wood tones, bark ink, forest green.
+     --ink/--muted/--line etc keep their old roles so existing rules still work. */
   :root, [data-theme="white"] { color-scheme: light;
-    --bg:#ffffff; --card:#ffffff; --ink:#111111; --muted:#8a8a8a;
-    --faint:#c9c9c9; --line:#ececec; --fill:#f6f6f6; --inv:#ffffff;
+    --bg:#F4F3F0; --card:#ffffff; --ink:#221E1A; --muted:#8a8378;
+    --faint:#c9c2b7; --line:#e4e0d8; --fill:#efece5; --inv:#ffffff;
+    --wood:#C29B6E; --wood-mid:#A87C4F; --wood-dark:#7A5433;
+    --green:#5F7043; --leaf:#7E9455; --charcoal:#3A3A3A;
+    --accent:var(--green); --grain:0.035;
   }
   [data-theme="black"] { color-scheme: dark;
-    --bg:#0e0e0e; --card:#0e0e0e; --ink:#f2f2f2; --muted:#8f8f8f;
-    --faint:#4a4a4a; --line:#262626; --fill:#1c1c1c; --inv:#0e0e0e;
+    --bg:#131210; --card:#1A1815; --ink:#F2EFE9; --muted:#948c80;
+    --faint:#4a443c; --line:#2c2823; --fill:#221F1B; --inv:#131210;
+    --wood:#C29B6E; --wood-mid:#A87C4F; --wood-dark:#8B6236;
+    --green:#7E9455; --leaf:#93A867; --charcoal:#2A2A2A;
+    --accent:var(--leaf); --grain:0.05;
   }
+  /* display face for headings; data and lists stay on the system sans */
+  h1, .wk-lbl, .sess-head, .chart-head .ct, .block-title, .n-title, .timer-title, .t-remaining, .sel-card .st {
+    font-family:"Oswald", "Segoe UI", Roboto, sans-serif; letter-spacing:0.02em;
+  }
+  h1 { text-transform:uppercase; }
   * { box-sizing:border-box; margin:0; padding:0; }
   html { -webkit-text-size-adjust:100%; }
   * { -webkit-tap-highlight-color:transparent; }
@@ -47,7 +67,7 @@
   .unitbox .opts, .themebox { display:flex; border:1px solid var(--line); border-radius:8px; overflow:hidden; }
   .themebox { margin-top:6px; }
   .unitbox button, .themebox button { border:none; background:var(--card); padding:8px 16px; font-size:0.78rem; cursor:pointer; color:var(--muted); }
-  .unitbox button.on, .themebox button.on { background:var(--ink); color:var(--inv); }
+  .unitbox button.on, .themebox button.on { background:var(--wood-dark); color:#fff; }
 
   .warmup { border:1px solid var(--line); border-radius:10px; padding:10px 14px; margin:0 0 12px; font-size:0.8rem; color:var(--muted); }
   .warmup b { color:var(--ink); font-weight:600; }
@@ -57,10 +77,10 @@
   .weeks { display:flex; gap:5px; flex-wrap:wrap; }
   .wk { position:relative; border:1px solid var(--line); background:var(--card); border-radius:8px; padding:9px 0 10px; font-size:0.78rem; cursor:pointer; transition:border-color .15s; flex:1; min-width:52px; text-align:center; color:var(--ink); }
   .wk:hover { border-color:var(--ink); }
-  .wk.active { background:var(--ink); color:var(--inv); border-color:var(--ink); }
+  .wk.active { background:var(--wood-dark); color:#fff; border-color:var(--wood-dark); }
   .wk .wk-pct { display:block; font-size:0.62rem; color:var(--muted); margin-top:1px; font-variant-numeric:tabular-nums; }
   .wk.active .wk-pct { color:var(--faint); }
-  .wk .wk-dot { position:absolute; top:5px; right:6px; width:5px; height:5px; border-radius:50%; background:var(--ink); display:none; }
+  .wk .wk-dot { position:absolute; top:5px; right:6px; width:6px; height:6px; border-radius:50%; background:var(--green); display:none; }
   .wk.active .wk-dot { background:var(--inv); }
   .wk.complete .wk-dot { display:block; }
 
@@ -72,7 +92,7 @@
   .sess-table th:first-child { text-align:left; }
   .sess-table td { padding:4px 6px; text-align:center; border-top:1px solid var(--line); }
   .sess-table td:first-child { text-align:left; font-weight:500; color:var(--muted); white-space:nowrap; }
-  .sess-done { background:var(--fill); color:var(--ink); border-radius:6px; padding:2px 6px; font-weight:500; white-space:nowrap; display:inline-block; font-variant-numeric:tabular-nums; }
+  .sess-done { background:color-mix(in srgb, var(--green) 16%, transparent); color:var(--green); border-radius:6px; padding:2px 6px; font-weight:500; white-space:nowrap; display:inline-block; font-variant-numeric:tabular-nums; }
   .sess-partial { color:var(--ink); font-weight:600; }
   .sess-empty { color:var(--faint); }
   .sess-note { font-size:0.68rem; color:var(--muted); margin-top:8px; }
@@ -90,17 +110,22 @@
   .tabs { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:12px; }
   .tab { border:1px solid var(--line); background:var(--card); border-radius:999px; padding:10px 18px; font-size:0.85rem; cursor:pointer; transition:border-color .15s; color:var(--ink); }
   .tab:hover { border-color:var(--ink); }
-  .tab.active { background:var(--ink); color:var(--inv); border-color:var(--ink); }
+  .tab.active { background:var(--wood-dark); color:#fff; border-color:var(--wood-dark); }
   .tab .badge { font-size:0.66rem; opacity:0.6; margin-left:4px; font-variant-numeric:tabular-nums; }
   .tab .tick { font-weight:600; margin-left:4px; }
   .tab .notemark { font-size:0.62rem; margin-left:3px; opacity:0.55; }
 
   .day-label { font-size:0.76rem; color:var(--muted); margin-bottom:8px; }
+  .card, .sesscard, .chartcard, .notecard { position:relative; }
+  .card::before, .sesscard::before, .chartcard::before, .notecard::before {
+    content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit; opacity:var(--grain);
+    background:repeating-linear-gradient(90deg, var(--wood-dark) 0 1px, transparent 1px 7px);
+  }
   .card { border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--card); }
   .block-title { font-size:0.62rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--muted); padding:14px 16px 4px; font-weight:600; }
   .ex { border-top:1px solid var(--line); padding:12px 14px; }
   .ex-main { display:flex; align-items:center; gap:12px; min-height:32px; }
-  .ex input[type=checkbox] { width:22px; height:22px; accent-color:var(--ink); flex-shrink:0; cursor:pointer; }
+  .ex input[type=checkbox] { width:22px; height:22px; accent-color:var(--green); flex-shrink:0; cursor:pointer; }
   .ex .name { flex:1; font-size:0.9rem; cursor:pointer; font-weight:450; }
   .ex .scheme { font-size:0.78rem; color:var(--muted); white-space:nowrap; font-variant-numeric:tabular-nums; }
   .ex .note { display:block; font-size:0.72rem; color:var(--muted); }
@@ -109,7 +134,7 @@
   .wrow input[type=number] { width:96px; border:1px solid var(--line); border-radius:8px; padding:10px 10px; font-size:16px; background:var(--card); color:var(--ink); }
   .wrow input[type=number]:focus { outline:none; border-color:var(--ink); }
   .wrow .u { font-size:0.76rem; color:var(--muted); min-width:18px; }
-  .wrow .logbtn { border:1px solid var(--ink); background:var(--ink); color:var(--inv); border-radius:8px; padding:10px 16px; font-size:0.82rem; cursor:pointer; font-weight:500; }
+  .wrow .logbtn { border:1px solid var(--wood-dark); background:var(--wood-dark); color:#fff; border-radius:8px; padding:10px 16px; font-size:0.82rem; cursor:pointer; font-weight:500; }
   .wrow .logbtn:hover { opacity:0.8; }
   .wrow .last { font-size:0.75rem; color:var(--muted); }
   .wrow .last b { color:var(--ink); font-weight:600; }
@@ -118,7 +143,7 @@
   .wrow .histbtn:hover { color:var(--ink); }
   .wrow .chartbtn { background:none; border:1px solid var(--line); border-radius:6px; padding:2px 7px; font-size:0.7rem; cursor:pointer; color:var(--muted); }
   .wrow .chartbtn:hover { border-color:var(--ink); color:var(--ink); }
-  .pr-badge { border:1px solid var(--ink); color:var(--ink); border-radius:6px; padding:0px 6px; font-size:0.66rem; font-weight:600; white-space:nowrap; letter-spacing:0.04em; }
+  .pr-badge { border:1px solid var(--green); color:var(--green); background:color-mix(in srgb, var(--green) 10%, transparent); border-radius:6px; padding:0px 6px; font-size:0.66rem; font-weight:600; white-space:nowrap; letter-spacing:0.04em; }
   .hist { margin-top:8px; margin-left:28px; border-left:2px solid var(--line); padding:4px 0 4px 12px; display:none; }
   .hist.open { display:block; }
   .hist .h-entry { display:flex; gap:12px; font-size:0.78rem; padding:3px 0; align-items:center; }
@@ -129,8 +154,8 @@
   .hist .h-del:hover { color:var(--ink); }
   .hist .empty { font-size:0.75rem; color:var(--muted); font-style:italic; }
 
-  .progress { height:3px; background:var(--line); border-radius:2px; margin:14px 0 6px; overflow:hidden; }
-  .progress div { height:100%; background:var(--ink); width:0%; transition:width .25s; }
+  .progress { height:5px; background:var(--line); border-radius:3px; margin:14px 0 6px; overflow:hidden; }
+  .progress div { height:100%; background:linear-gradient(90deg, var(--wood-mid), var(--green)); width:0%; transition:width .35s cubic-bezier(.3,1,.4,1); }
   .footer { display:flex; justify-content:space-between; align-items:center; margin-top:8px; font-size:0.74rem; color:var(--muted); }
   .reset { background:none; border:none; padding:8px 0; font-size:0.74rem; cursor:pointer; color:var(--muted); text-decoration:underline; text-underline-offset:2px; }
   .reset:hover { color:var(--ink); }
@@ -144,7 +169,7 @@
   .notecard textarea:focus { outline:none; border-color:var(--ink); }
   .notecard textarea::placeholder { color:var(--faint); font-style:italic; }
 
-  .pr-toast { position:fixed; top:18px; left:50%; transform:translateX(-50%) translateY(-130%); background:var(--ink); color:var(--inv); border-radius:10px; padding:11px 20px; font-size:0.88rem; font-weight:600; z-index:100; transition:transform .3s ease; pointer-events:none; max-width:90vw; text-align:center; }
+  .pr-toast { position:fixed; top:18px; left:50%; transform:translateX(-50%) translateY(-130%); background:var(--wood-dark); color:#fff; border-radius:10px; padding:11px 20px; font-size:0.88rem; font-weight:600; z-index:100; transition:transform .3s ease; pointer-events:none; max-width:90vw; text-align:center; }
   .pr-toast.show { transform:translateX(-50%) translateY(0); }
   .pr-toast small { display:block; font-weight:400; font-size:0.74rem; opacity:0.7; margin-top:2px; }
 
@@ -156,12 +181,12 @@
   .timer-run { display:none; align-items:center; gap:12px; flex:1; }
   .timerbar.running .timer-run { display:flex; }
   .timerbar.running .tpreset, .timerbar.running .timer-title { display:none; }
-  .t-remaining { font-size:1.5rem; font-weight:600; font-variant-numeric:tabular-nums; color:var(--ink); min-width:78px; }
+  .t-remaining { font-size:1.7rem; font-weight:600; font-variant-numeric:tabular-nums; color:var(--wood-dark); min-width:86px; }
   .t-track { flex:1; height:3px; background:var(--line); border-radius:2px; overflow:hidden; }
-  .t-track div { height:100%; background:var(--ink); width:100%; transition:width 0.25s linear; }
+  .t-track div { height:100%; background:linear-gradient(90deg, var(--wood-mid), var(--green)); width:100%; transition:width 0.25s linear; }
   .t-cancel, .t-add { border:1px solid var(--line); background:var(--card); border-radius:8px; padding:9px 14px; font-size:0.76rem; cursor:pointer; color:var(--muted); }
   .t-cancel:hover, .t-add:hover { border-color:var(--ink); color:var(--ink); }
-  .timerbar.finished { background:var(--ink); border-color:var(--ink); }
+  .timerbar.finished { background:var(--green); border-color:var(--green); }
   .t-msg { display:none; font-size:0.92rem; font-weight:600; color:var(--inv); flex:1; text-align:center; }
   .timerbar.finished .t-msg { display:block; }
   .timerbar.finished .t-track, .timerbar.finished .t-cancel, .timerbar.finished .t-add, .timerbar.finished .t-remaining, .timerbar.finished .tpreset, .timerbar.finished .timer-title { display:none; }
@@ -177,8 +202,8 @@
 <div id="selView" style="display:none">
   <header>
     <div>
-      <h1>Rutinas</h1>
-      <div class="sub">Elige un programa para entrenar</div>
+      <h1 id="cSelTitle">Rutinas</h1>
+      <div class="sub" id="cSelSub">Elige un programa para entrenar</div>
     </div>
   </header>
   <div class="sel-list" id="selList"></div>
@@ -212,19 +237,19 @@
 <div class="warmup" id="warmupBox"><span id="warmupText"></span></div>
 
 <div class="weekbar">
-  <div class="wk-lbl">Semana</div>
+  <div class="wk-lbl" id="cWeekLbl">Semana</div>
   <div class="weeks" id="weeks"></div>
 </div>
 
 <div class="sesscard">
-  <div class="sess-head">Sesiones</div>
+  <div class="sess-head" id="cSessHead">Sesiones</div>
   <div style="overflow-x:auto"><table class="sess-table" id="sessTable"></table></div>
-  <div class="sess-note">La fecha se estampa al completar el día · % = empezado · — = sin actividad · · = con nota</div>
+  <div class="sess-note" id="cSessNote">La fecha se estampa al completar el día · % = empezado · — = sin actividad · · = con nota</div>
 </div>
 
 <div class="chartcard">
   <div class="chart-head">
-    <span class="ct">Progresión</span>
+    <span class="ct" id="cChartHead">Progresión</span>
     <select id="chartSel"></select>
     <select id="chartSel2"><option value="">comparar con…</option></select>
     <button class="toggle" id="chartMode">Por semana</button>
@@ -239,7 +264,7 @@
 
 <div class="notecard">
   <div class="n-head">
-    <span class="n-title">Notas del día</span>
+    <span class="n-title" id="cNoteTitle">Notas del día</span>
     <span class="n-status" id="noteStatus">Guardado</span>
   </div>
   <textarea id="dayNote" placeholder="p. ej. «hombro raro en el press, bajé el peso» · «gym lleno, cambié dips por pushdowns»"></textarea>
@@ -256,7 +281,7 @@
 
 <div class="timerbar" id="timerbar" style="display:none">
   <div class="timer-inner">
-    <span class="timer-title">Descanso</span>
+    <span class="timer-title" id="cTimerTitle">Descanso</span>
     <button class="tpreset" data-s="30">30 s</button>
     <button class="tpreset" data-s="60">1:00</button>
     <button class="tpreset" data-s="120">2:00</button>
@@ -279,12 +304,111 @@
    Storage: app.prefs (global), routine.<id>.state (per routine).
    ===================================================================== */
 
+/* =====================================================================
+   COPY — two voices for every string.
+   "logan": the mascot narrates, informal Spanish, dry, never scolding.
+   "plain": neutral labels, used by minimal mode.
+   t(key, vars) resolves against the active voice with a plain fallback.
+   ===================================================================== */
+const COPY = {
+  plain: {
+    selTitle: "Rutinas",
+    selSub: "Elige un programa para entrenar",
+    selEmpty: "Todavía no hay rutinas publicadas.<br>Vuelve a mirar más tarde.",
+    back: "‹ Rutinas",
+    weekLbl: "Semana",
+    sessHead: "Sesiones",
+    sessNote: "La fecha se estampa al completar el día · % = empezado · — = sin actividad · · = con nota",
+    chartHead: "Progresión",
+    chartCompare: "comparar con…",
+    chartByWeek: "Por semana",
+    chartBySession: "Por sesión",
+    chartEmpty: "Sin datos todavía — loguea pesos y aquí verás tu progresión.",
+    noteTitle: "Notas del día",
+    noteSaved: "Guardado",
+    notePlaceholder: "p. ej. «hombro raro en el press, bajé el peso» · «gym lleno, cambié dips por pushdowns»",
+    reset: "Reiniciar día",
+    timerTitle: "Descanso",
+    timerDone: "Descanso terminado — siguiente serie",
+    prTitle: (n, w) => `Nuevo PR — ${n}: ${w}`,
+    prSub: (p) => `anterior mejor: ${p}`,
+    warmup: "Warm up",
+    counter: (wk, tab, d, t) => `Semana ${wk} · ${tab} · ${d}/${t}`,
+    dayDone: (date) => `✓ ${date}`,
+    loading: "Cargando…",
+    loadError: "No se pudieron cargar las rutinas. Recarga la página.",
+    install: "<b>Consejo</b> — añade la app a tu pantalla de inicio: en iPhone abre el menú Compartir y elige «Añadir a pantalla de inicio»; en Android, menú ⋮ → «Instalar aplicación»."
+  },
+  logan: {
+    selTitle: "Tus rutinas",
+    selSub: "Elige uno. Logan ya está calentando.",
+    selEmpty: "Aquí no hay nada todavía.<br>Logan sigue esperando con la libreta en la mano.",
+    back: "‹ Volver",
+    weekLbl: "Semana del programa",
+    sessHead: "Tu historial",
+    sessNote: "La fecha aparece sola cuando terminas el día · % = a medias · — = ese día no pasó nada · · = dejaste nota",
+    chartHead: "Cómo vas",
+    chartCompare: "comparar con…",
+    chartByWeek: "Por semana",
+    chartBySession: "Por sesión",
+    chartEmpty: "Todavía sin datos. Levanta algo y vuelve.",
+    noteTitle: "Notas del día",
+    noteSaved: "Anotado",
+    notePlaceholder: "p. ej. «el hombro andaba raro, bajé peso» · «gym lleno, cambié dips por pushdowns»",
+    reset: "Borrar el día",
+    timerTitle: "Descanso",
+    timerDone: "Se acabó el descanso. Otra serie.",
+    prTitle: (n, w) => `¡PR! ${n}: ${w}`,
+    prSub: (p) => `tu marca anterior: ${p} — ya es historia`,
+    warmup: "Calentamiento",
+    counter: (wk, tab, d, t) => d === t
+      ? `Semana ${wk} · ${tab} · completo. Bien hecho.`
+      : `Semana ${wk} · ${tab} · ${d} de ${t}`,
+    dayDone: (date) => `✓ hecho el ${date}`,
+    loading: "Logan está buscando tus rutinas…",
+    loadError: "No se pudieron cargar las rutinas. Recarga la página.",
+    install: "<b>Consejo de Logan</b> — ponme en tu pantalla de inicio: en iPhone, menú Compartir → «Añadir a pantalla de inicio»; en Android, menú ⋮ → «Instalar aplicación». Así entras de un toque."
+  }
+};
+
+function t(key, ...args) {
+  const voice = (prefs.minimal ? COPY.plain : COPY.logan);
+  const v = voice[key] !== undefined ? voice[key] : COPY.plain[key];
+  return typeof v === "function" ? v(...args) : v;
+}
+
+/* Fill the static strings in the markup. Called on boot and whenever the voice changes. */
+function applyCopy() {
+  const set = (id, val, html) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (html) el.innerHTML = val; else el.textContent = val;
+  };
+  set("cSelTitle", t("selTitle"));
+  set("cSelSub", t("selSub"));
+  set("backBtn", t("back"));
+  set("cWeekLbl", t("weekLbl"));
+  set("cSessHead", t("sessHead"));
+  set("cSessNote", t("sessNote"), true);
+  set("cChartHead", t("chartHead"));
+  set("cNoteTitle", t("noteTitle"));
+  set("noteStatus", t("noteSaved"));
+  set("resetBtn", t("reset"));
+  set("cTimerTitle", t("timerTitle"));
+  set("tMsg", t("timerDone"));
+  set("chartEmpty", t("chartEmpty"));
+  set("installTip", t("install"), true);
+  const note = document.getElementById("dayNote");
+  if (note) note.placeholder = t("notePlaceholder");
+}
+
 /* ---------- persistence ---------- */
 const PREFS_KEY = "app.prefs";
 function loadJSON(k) { try { return JSON.parse(localStorage.getItem(k)); } catch(e) { return null; } }
 let prefs = loadJSON(PREFS_KEY) || {};
 if (!prefs.unit) prefs.unit = "kg";
 if (!prefs.theme) prefs.theme = "white";
+if (prefs.minimal === undefined) prefs.minimal = false;   // minimal mode: plain copy, no mascot
 function savePrefs() { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); }
 
 /* ---------- runtime state ---------- */
@@ -344,10 +468,12 @@ async function loadRoutineDoc(id) {
 
 async function boot() {
   applyTheme();
+  applyCopy();
+  document.getElementById("bootMsg").textContent = t("loading");
   try {
     manifest = await loadManifest();
   } catch(e) {
-    document.getElementById("bootMsg").textContent = "No se pudieron cargar las rutinas. Recarga la página.";
+    document.getElementById("bootMsg").textContent = t("loadError");
     return;
   }
   renderSelector();
@@ -371,7 +497,7 @@ function renderSelector() {
   const l = document.getElementById("selList");
   l.innerHTML = "";
   if (!manifest.routines.length) {
-    l.innerHTML = `<div class="sel-empty">Todavía no hay rutinas publicadas.<br>Vuelve a mirar más tarde.</div>`;
+    l.innerHTML = `<div class="sel-empty">${t("selEmpty")}</div>`;
     return;
   }
   manifest.routines.forEach(r=>{
@@ -435,7 +561,7 @@ async function openRoutine(id) {
   document.getElementById("warmupBox").style.display = hasWarmup ? "" : "none";
   if (hasWarmup) {
     document.getElementById("warmupText").innerHTML =
-      "<b>Warm up</b> — " + routine.warmup.map(w=>`${w.name} ${w.scheme}`).join(" · ");
+      `<b>${t("warmup")}</b> — ` + routine.warmup.map(w=>`${w.name} ${w.scheme}`).join(" · ");
   }
   document.getElementById("backBtn").style.display = manifest.routines.length > 1 ? "" : "none";
 
@@ -479,7 +605,7 @@ let toastTimer = null;
 function showPrToast(name, entry, prevBestKg) {
   const el = document.getElementById("prToast");
   const prevTxt = rnd(toUnit(prevBestKg, "kg", prefs.unit)) + " " + prefs.unit;
-  el.innerHTML = `Nuevo PR — ${name}: ${fmtW(entry)}<small>anterior mejor: ${prevTxt}</small>`;
+  el.innerHTML = `${t("prTitle", name, fmtW(entry))}<small>${t("prSub", prevTxt)}</small>`;
   el.classList.add("show");
   clearTimeout(toastTimer);
   toastTimer = setTimeout(()=>el.classList.remove("show"), 3500);
@@ -605,8 +731,8 @@ function logWeight(name, inputEl) {
 /* ---------- progression chart (monochrome, theme-aware) ---------- */
 function chartColors() {
   return prefs.theme === "black"
-    ? { main:"#f2f2f2", cmp:"#5c5c5c", grid:"#222222", axis:"#8f8f8f", hollow:"#0e0e0e", tipBg:"#f2f2f2", tipTx:"#0e0e0e" }
-    : { main:"#111111", cmp:"#b3b3b3", grid:"#f0f0f0", axis:"#8a8a8a", hollow:"#ffffff", tipBg:"#111111", tipTx:"#ffffff" };
+    ? { main:"#C29B6E", cmp:"#5c554c", grid:"#2c2823", axis:"#948c80", hollow:"#1A1815", pr:"#93A867", tipBg:"#F2EFE9", tipTx:"#131210" }
+    : { main:"#7A5433", cmp:"#c9c2b7", grid:"#eceae4", axis:"#8a8378", hollow:"#ffffff", pr:"#5F7043", tipBg:"#221E1A", tipTx:"#ffffff" };
 }
 
 function weekSeries(name) {
@@ -635,7 +761,7 @@ function renderChartSelectors() {
   if (!list.includes(state._chartEx)) state._chartEx = list[0];
   s1.innerHTML = list.map(n=>`<option ${n===state._chartEx?"selected":""}>${n}</option>`).join("");
   const cmp = state._chartEx2 || "";
-  s2.innerHTML = `<option value="">comparar con…</option>` +
+  s2.innerHTML = `<option value="">${t("chartCompare")}</option>` +
     list.filter(n=>n!==state._chartEx).map(n=>`<option ${n===cmp?"selected":""}>${n}</option>`).join("");
 }
 
@@ -646,7 +772,7 @@ function renderChart() {
   const hasData = (state.w[name]||[]).length > 0;
   document.getElementById("chartEmpty").style.display = hasData ? "none" : "block";
   document.querySelector(".chart-wrap").style.opacity = hasData ? 1 : 0.35;
-  document.getElementById("chartMode").textContent = chartMode==="week" ? "Por semana" : "Por sesión";
+  document.getElementById("chartMode").textContent = chartMode==="week" ? t("chartByWeek") : t("chartBySession");
 
   const cc = chartColors();
   let labels, datasets;
@@ -661,8 +787,8 @@ function renderChart() {
     datasets = [{
       label:name, data:s.data, borderColor:cc.main, borderWidth:1.5, tension:0.25,
       pointRadius: s.data.map((_,i)=>prs.has(i)?5.5:3.5),
-      pointBackgroundColor: s.data.map((_,i)=>prs.has(i)?cc.main:cc.hollow),
-      pointBorderColor: cc.main,
+      pointBackgroundColor: s.data.map((_,i)=>prs.has(i)?cc.pr:cc.hollow),
+      pointBorderColor: s.data.map((_,i)=>prs.has(i)?cc.pr:cc.main),
       pointBorderWidth: 1.5
     }];
   }
@@ -700,6 +826,7 @@ document.getElementById("chartMode").onclick = ()=>{ chartMode = chartMode==="we
 function render() {
   if (!routine) return;
   applyTheme();
+  applyCopy();
   renderWeeks();
   renderSessions();
   renderTabs();
@@ -709,7 +836,7 @@ function render() {
   const d = DAYS.find(x=>x.key===current);
   const stamp = state.s[sk(state._week, d.key)];
   document.getElementById("dayLabel").innerHTML = "Semana "+state._week+" · "+d.label +
-    (stamp ? `<span class="day-stamp">✓ ${fmtDate(stamp)}</span>` : "");
+    (stamp ? `<span class="day-stamp">${t("dayDone", fmtDate(stamp))}</span>` : "");
   const card = document.getElementById("card");
   card.innerHTML = "";
   d.blocks.forEach((blk,bi)=>{
@@ -791,7 +918,7 @@ function render() {
   });
   const {done,total} = dayDone(d);
   document.getElementById("bar").style.width = (total?100*done/total:0)+"%";
-  document.getElementById("count").textContent = `Semana ${state._week} · ${d.tab} · ${done}/${total}`;
+  document.getElementById("count").textContent = t("counter", state._week, d.tab, done, total);
 }
 
 document.getElementById("uKg").onclick = ()=>{ prefs.unit="kg"; savePrefs(); render(); };
