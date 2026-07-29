@@ -40,6 +40,9 @@
   .sel-card:hover { border-color:var(--ink); }
   .sel-card .st { font-weight:600; font-size:0.98rem; color:var(--ink); }
   .sel-card .ss { color:var(--muted); font-size:0.78rem; margin-top:3px; }
+  .sel-empty { border:1px dashed var(--line); border-radius:10px; padding:22px 16px; text-align:center; color:var(--muted); font-size:0.85rem; }
+  .install-tip { margin-top:18px; border-top:1px solid var(--line); padding-top:14px; color:var(--muted); font-size:0.76rem; line-height:1.5; }
+  .install-tip b { color:var(--ink); font-weight:600; }
 
   .unitbox .opts, .themebox { display:flex; border:1px solid var(--line); border-radius:8px; overflow:hidden; }
   .themebox { margin-top:6px; }
@@ -179,6 +182,11 @@
     </div>
   </header>
   <div class="sel-list" id="selList"></div>
+  <div class="install-tip" id="installTip">
+    <b>Consejo</b> — añade la app a tu pantalla de inicio: en iPhone abre el menú Compartir y elige
+    «Añadir a pantalla de inicio»; en Android, menú ⋮ → «Instalar aplicación». Se abrirá a pantalla
+    completa, como una app normal.
+  </div>
 </div>
 
 <!-- ============ TRACKER ============ -->
@@ -362,6 +370,10 @@ function showSelector() {
 function renderSelector() {
   const l = document.getElementById("selList");
   l.innerHTML = "";
+  if (!manifest.routines.length) {
+    l.innerHTML = `<div class="sel-empty">Todavía no hay rutinas publicadas.<br>Vuelve a mirar más tarde.</div>`;
+    return;
+  }
   manifest.routines.forEach(r=>{
     const b = document.createElement("button");
     b.className = "sel-card";

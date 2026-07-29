@@ -105,7 +105,11 @@
 <!-- ================= HOME ================= -->
 <div id="homeView" class="hidden">
   <header>
-    <div><h1>Admin</h1><div class="sub">Sube una foto o PDF de una rutina y publícala</div></div>
+    <div>
+      <h1>Admin</h1>
+      <div class="sub">Sube una foto o PDF de una rutina y publícala</div>
+      <div class="sub" id="usageLine" style="margin-top:6px"></div>
+    </div>
     <div class="row">
       <button class="btn ghost sm" id="thToggle">Tema</button>
       <button class="btn ghost sm" id="logoutBtn">Salir</button>
@@ -250,6 +254,18 @@ $("logoutBtn").onclick = () => { sessionStorage.removeItem(TOKEN_KEY); token = "
 async function enterHome() {
   showView("homeView");
   loadRoutines();
+  loadUsage();
+}
+
+/* month-to-date spend + this hour's rate-limit consumption, visible where you work */
+async function loadUsage() {
+  try {
+    const u = await api("/api/usage");
+    const m = u.month;
+    const parts = [`Este mes: ${m.parses} análisis · $${(m.costUSD || 0).toFixed(2)}`];
+    if (u.rate.used > 0) parts.push(`${u.rate.used}/${u.rate.limit} esta hora`);
+    $("usageLine").textContent = parts.join(" · ");
+  } catch (e) { $("usageLine").textContent = ""; }
 }
 async function loadRoutines() {
   const el = $("rtList");
