@@ -7,16 +7,25 @@
 <meta name="apple-mobile-web-app-title" content="Admin">
 <meta name="theme-color" content="#ffffff">
 <meta name="robots" content="noindex">
-<title>Admin · Workout App</title>
+<title>Admin · Logan</title>
+<link rel="icon" href="img/favicon-64.png" sizes="64x64">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
   :root, [data-theme="white"] { color-scheme: light;
-    --bg:#ffffff; --card:#ffffff; --ink:#111111; --muted:#8a8a8a;
-    --faint:#c9c9c9; --line:#ececec; --fill:#f6f6f6; --inv:#ffffff; --warn:#b45309; --warn-soft:#fef3c7; --bad:#b91c1c;
+    --bg:#F4F3F0; --card:#ffffff; --ink:#221E1A; --muted:#8a8378;
+    --faint:#c9c2b7; --line:#e4e0d8; --fill:#efece5; --inv:#ffffff; --warn:#b45309; --warn-soft:#fef3c7; --bad:#b91c1c;
+    --wood-dark:#7A5433; --green:#5F7043;
   }
   [data-theme="black"] { color-scheme: dark;
-    --bg:#0e0e0e; --card:#0e0e0e; --ink:#f2f2f2; --muted:#8f8f8f;
-    --faint:#4a4a4a; --line:#262626; --fill:#1c1c1c; --inv:#0e0e0e; --warn:#fbbf24; --warn-soft:#3a2c05; --bad:#f87171;
+    --bg:#131210; --card:#1A1815; --ink:#F2EFE9; --muted:#948c80;
+    --faint:#4a443c; --line:#2c2823; --fill:#221F1B; --inv:#131210; --warn:#fbbf24; --warn-soft:#3a2c05; --bad:#f87171;
+    --wood-dark:#8B6236; --green:#7E9455;
   }
+  h1, .lbl { font-family:"Oswald","Segoe UI",Roboto,sans-serif; letter-spacing:0.03em; }
+  h1 { text-transform:uppercase; }
+  .lbl { font-size:0.72rem !important; letter-spacing:0.1em !important; }
   * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
   html { -webkit-text-size-adjust:100%; }
   body { font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:var(--ink);
@@ -32,8 +41,9 @@
   input:focus, textarea:focus, select:focus { outline:none; border-color:var(--ink); }
   input.bad, textarea.bad { border-color:var(--bad); }
 
-  .btn { border:1px solid var(--ink); background:var(--ink); color:var(--inv); border-radius:8px;
+  .btn { border:1px solid var(--wood-dark); background:var(--wood-dark); color:#fff; border-radius:8px;
          padding:11px 18px; font-size:0.85rem; cursor:pointer; font-weight:500; }
+  #publishBtn { background:var(--green); border-color:var(--green); }
   .btn:disabled { opacity:0.4; cursor:default; }
   .btn.ghost { background:var(--card); color:var(--ink); }
   .btn.ghost:hover:not(:disabled) { border-color:var(--ink); }
@@ -84,6 +94,10 @@
   .needs { outline:2px solid var(--warn); }
   .cost { font-size:0.72rem; color:var(--muted); font-variant-numeric:tabular-nums; }
   .stickybar { position:sticky; bottom:0; background:var(--bg); border-top:1px solid var(--line); padding:12px 0 calc(12px + env(safe-area-inset-bottom)); display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .parse-logan { display:none; width:96px; height:96px; object-fit:contain; margin:10px auto 0; animation:sway 3s ease-in-out infinite; }
+  .parse-logan.on { display:block; }
+  @keyframes sway { 0%,100%{transform:rotate(-2deg) translateY(0);} 50%{transform:rotate(2deg) translateY(-3px);} }
+  .empty-logan { width:90px; height:90px; object-fit:contain; margin:6px auto 8px; display:block; opacity:.9; }
   .spin { display:inline-block; width:13px; height:13px; border:2px solid var(--faint); border-top-color:var(--ink); border-radius:50%; animation:sp .7s linear infinite; vertical-align:-2px; margin-right:7px; }
   @keyframes sp { to { transform:rotate(360deg); } }
 </style>
@@ -130,6 +144,7 @@
     <input type="file" id="inFile" accept="application/pdf,image/jpeg,image/png,image/webp" class="hidden">
     <img id="preview" alt="preview">
     <div id="fileInfo" class="sub" style="margin-top:8px"></div>
+    <img class="parse-logan" id="parseLogan" src="img/logan-thinking.png" alt="">
     <div id="parseMsg"></div>
     <div class="row" style="margin-top:12px">
       <button class="btn" id="parseBtn" disabled>Analizar</button>
@@ -271,7 +286,10 @@ async function loadRoutines() {
   const el = $("rtList");
   try {
     const data = await api("/api/routines");
-    if (!data.routines.length) { el.innerHTML = `<div class="sub">Todavía no hay rutinas publicadas.</div>`; return; }
+    if (!data.routines.length) {
+      el.innerHTML = `<img class="empty-logan" src="img/logan-plan.png" alt=""><div class="sub" style="text-align:center">Todavía no hay rutinas publicadas.</div>`;
+      return;
+    }
     el.innerHTML = "";
     data.routines.forEach(r => {
       const row = document.createElement("div");
@@ -434,6 +452,7 @@ $("parseBtn").onclick = async () => {
   if (!picked) return;
   $("parseBtn").disabled = true;
   $("parseCost").textContent = "";
+  $("parseLogan").classList.add("on");
   const startedAt = Date.now();
   msg($("parseMsg"), "info", '<span class="spin"></span>Enviando el archivo…');
   try {
@@ -475,6 +494,7 @@ $("parseBtn").onclick = async () => {
       (e.detail ? `<details style="margin-top:6px"><summary style="cursor:pointer;opacity:.7">Detalle técnico</summary><div style="font-size:0.72rem;opacity:.8;margin-top:4px;word-break:break-word">${esc(e.detail)}</div></details>` : ""));
   } finally {
     $("parseBtn").disabled = false;
+    $("parseLogan").classList.remove("on");
   }
 };
 
