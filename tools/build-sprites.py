@@ -41,12 +41,13 @@ for f in sorted(glob.glob(f"{SRC}/*.png")):
     masters[name] = im
     save(fit(im, PLAN.get(name, 384)), f"{OUT}/{name}.png")
 
-head, badge = masters["head-ready"], masters["logan-mark"]
-save(fit(head, 192), f"{OUT}/icon-192.png")
-save(fit(head, 512), f"{OUT}/icon-512.png")
-save(fit(head, 180), f"{OUT}/apple-touch-icon.png")
+# the pine badge is the app's mark everywhere: home screen, tab and maskable icon
+badge = masters["logan-mark"]
+save(fit(badge, 192), f"{OUT}/icon-192.png")
+save(fit(badge, 512), f"{OUT}/icon-512.png")
+save(fit(badge, 180), f"{OUT}/apple-touch-icon.png")
 m = Image.new("RGBA", (512, 512), (244, 243, 240, 255))
-h = fit(head, 512, pad=0.22)
+h = fit(badge, 512, pad=0.20)
 m.paste(h, (0, 0), h)
 save(m, f"{OUT}/icon-maskable-512.png")
 for s in (32, 64):
