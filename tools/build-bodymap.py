@@ -132,7 +132,8 @@ def main():
         print(f"{name}: {len(ids)} cells, {len(unmapped)} unmapped (head/hands/feet expected): {unmapped}")
         parts.append(
             f'<g id="{name}">\n'
-            f'  <image href="img/body-{name}.png" x="{dx}" y="0" width="{w}" height="{h}"/>\n'
+            f'  <image class="art-light" href="img/body-{name}.png" x="{dx}" y="0" width="{w}" height="{h}"/>\n'
+            f'  <image class="art-dark" href="img/body-{name}-dark.png" x="{dx}" y="0" width="{w}" height="{h}"/>\n'
             + "\n".join(groups) + "\n"
             f'  <text x="{dx + w/2}" y="{h + 30}" text-anchor="middle">{"FRENTE" if name=="front" else "ESPALDA"}</text>\n'
             f'</g>')
@@ -142,7 +143,9 @@ def main():
      Regions are traced from the anatomy art itself, so highlights follow the drawing.
      Each group carries data-m="<muscle key>"; the app adds m-primary / m-secondary. -->
 <style>
-  #bodymap g[data-m] {{ mix-blend-mode: multiply; }}
+  /* two artworks, one per theme: the host page shows one and hides the other.
+     No blend modes and no CSS filters — both proved unreliable on iOS Safari. */
+  #bodymap .art-dark {{ display: none; }}
   #bodymap g[data-m] path {{ fill: transparent; transition: fill .2s ease; }}
   #bodymap g[data-m].m-secondary path {{ fill: var(--bm-secondary, #C29B6E); fill-opacity: .55; }}
   #bodymap g[data-m].m-primary   path {{ fill: var(--bm-primary, #5F7043); fill-opacity: .6; }}

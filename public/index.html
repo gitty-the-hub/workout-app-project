@@ -218,18 +218,19 @@
   .m-chip.p { background:color-mix(in srgb, var(--green) 18%, transparent); color:var(--green); font-weight:600; }
   .m-chip.s { background:color-mix(in srgb, var(--wood) 22%, transparent); color:var(--wood-dark); }
   .m-chip.i { border:1px solid var(--line); color:var(--muted); }
-  /* The map sits on its own light plate in BOTH themes: the art is dark-line-on-light,
-     so this guarantees contrast and lets us drop blend modes and filters entirely —
-     iOS silently ignores multiply/screen combined with an inverted image, which is
-     why the highlights disappeared in dark mode. */
-  .sheet-mapwrap { margin:8px 0 2px; background:#F4F3F0; border:1px solid var(--line);
-                   border-radius:12px; padding:8px 4px 2px; }
+  /* The SVG ships two artworks — light-line and dark-line — and we show the one that
+     suits the theme. No plate, no blend modes, no CSS filters (iOS Safari ignores
+     multiply/screen over a filtered image, which is what hid the tints before). */
+  .sheet-mapwrap { margin:8px 0 2px; }
   .sheet-mapwrap svg { width:100%; height:auto; display:block; }
   .sheet-mapwrap #bodymap g[data-m] { mix-blend-mode: normal; }
-  .sheet-mapwrap #bodymap image { filter: none; }
-  .sheet-mapwrap #bodymap g[data-m].m-primary path   { fill:#5F7043; fill-opacity:.58; }
+  .sheet-mapwrap #bodymap g[data-m].m-primary path   { fill:#5F7043; fill-opacity:.62; }
   .sheet-mapwrap #bodymap g[data-m].m-secondary path { fill:#C29B6E; fill-opacity:.62; }
-  .sheet-mapwrap #bodymap text { fill:#8a8378; }
+  [data-theme="black"] .sheet-mapwrap #bodymap .art-light { display:none; }
+  [data-theme="black"] .sheet-mapwrap #bodymap .art-dark  { display:inline; }
+  [data-theme="black"] .sheet-mapwrap #bodymap g[data-m].m-primary path   { fill:#8FA85C; fill-opacity:.72; }
+  [data-theme="black"] .sheet-mapwrap #bodymap g[data-m].m-secondary path { fill:#C29B6E; fill-opacity:.66; }
+  [data-theme="black"] .sheet-mapwrap #bodymap text { fill:#948c80; }
   .sheet-legend { display:flex; gap:14px; justify-content:center; font-size:.72rem; color:var(--muted); margin-top:2px; }
   .sheet-legend i { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:-1px; }
   .sheet-empty { color:var(--muted); font-size:.85rem; padding:16px 0; text-align:center; font-style:italic; }
