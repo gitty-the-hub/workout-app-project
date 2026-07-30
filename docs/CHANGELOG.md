@@ -105,3 +105,40 @@ Known, accepted divergences (representation choices, not defects):
       masters 1.5MB, served set 325KB; tools/build-sprites.py regenerates everything
 - Typography follow-up: section labels 0.62→0.72rem, day header 0.76→1.02rem;
       fixed dangling separator when a day has no muscle-group label
+
+## Phase 7 — Muscle focus & body map (complete)
+- 7.1 Exercise catalog: 200 rows from the user's bodybuilding database converted to
+      public/data/exercises.json (41KB) — name, 225 aliases, equipment, mechanic,
+      difficulty, primary/secondary muscles over a fixed 22-key vocabulary;
+      tools/build-exercises.py regenerates it from the markdown source
+- 7.2 Spanish display layer: public/data/labels-es.json translates the 22 muscle keys,
+      equipment, mechanic, difficulty and 7 UI strings. The catalog stays English,
+      the UI stays Spanish, and routine exercise names are never translated —
+      the user's sheet reads exactly as they wrote it
+- 7.3 Body map built from the user's own anatomy renders rather than hand-drawn shapes:
+      backgrounds keyed out, front/back aligned to one coordinate space, then each
+      muscle cell segmented and contour-traced (tools/build-bodymap.py) into
+      public/img/bodymap.svg — 22 regions that follow the drawing exactly.
+      Standalone preview page (public/bodymap-preview.html) for region-by-region review
+- 7.4 Matching ladder in lib/matcher.mjs: normalize -> alias -> fuzzy (Jaccard +
+      Levenshtein + glued-compound) with a Spanish->English lexicon and stemming.
+      74% of real routine names resolve locally at zero cost; MIN_AUTO 0.80, MIN_HINT 0.58.
+      POST /api/match adds one batched Claude call for the leftovers (whole catalog inline,
+      forced submit_matches, hallucinated ids and sub-0.6 confidence discarded, gaps only).
+      Schema gains optional ref/refScore, preserved through server hardening
+- 7.5 Admin match review: free local pass on opening review, "Buscar los que faltan con IA"
+      as a deliberate second click, per-name confidence badges, one-tap suggestion accept,
+      searchable catalog override, manual picks pinned at score 1.0
+- 7.6 Exercise detail sheet in the app: matched name, muscle chips, equipment and
+      difficulty, and both figures with primary (green) / secondary (wood) highlights.
+      Pure local lookup — no network call when a user taps an exercise.
+      GET /api/routines/:id backfills missing refs with the free ladder so routines
+      published before the catalog existed still show the guide (not persisted,
+      never overwrites a reviewed ref)
+- 7.7 Row actions became one icon family (clock+count / body / chart) after the three
+      text links crowded the weight row; quad highlight corrected to stop at the knee
+      (the tibialis anterior cells had been mapped as quads, flooding the whole leg)
+- Field lessons: mix-blend-mode combined with a CSS invert filter silently fails on
+      iOS Safari — shipped two pre-generated artworks switched by display instead;
+      and a traced overlay is only as good as its hand-authored cell map, so any
+      region change wants a visual re-check, not just a passing build
